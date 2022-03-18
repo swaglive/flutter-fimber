@@ -3,12 +3,14 @@ import 'dart:core';
 import 'dart:io';
 
 import 'package:fimber/fimber.dart';
+import 'package:synchronized/extension.dart';
 
 /// File based logging output tree.
 /// This tree if planted will post short formatted (elapsed time and message)
 /// output into file specified in constructor.
 /// Note: Mostly for testing right now
-class FimberFileTree extends CustomFormatTree with CloseableTree {
+class FimberFileTree extends CustomFormatTree
+    with CloseableTree, FileSizeListenable {
   /// Output current log file name.
   String outputFileName;
 
@@ -27,13 +29,14 @@ class FimberFileTree extends CustomFormatTree with CloseableTree {
   /// with optional [logFormat] from [CustomFormatTree] predicates.
   /// Takes optional [maxBufferSize] (default 1kB) and
   /// optional [bufferWriteInterval] in milliseconds.
-  FimberFileTree(this.outputFileName,
-      {logLevels = CustomFormatTree.defaultLevels,
-      logFormat = '${CustomFormatTree.timeStampToken}'
-          '\t${CustomFormatTree.messageToken}',
-      int maxBufferSize = bufferSizeLimit,
-      int bufferWriteInterval = fileBufferFlushInterval})
-      : super(logLevels: logLevels, logFormat: logFormat) {
+  FimberFileTree(
+    this.outputFileName, {
+    List<String> logLevels = CustomFormatTree.defaultLevels,
+    String logFormat =
+        '${CustomFormatTree.timeStampToken}\t${CustomFormatTree.messageToken}',
+    int maxBufferSize = bufferSizeLimit,
+    int bufferWriteInterval = fileBufferFlushInterval,
+  }) : super(logLevels: logLevels, logFormat: logFormat) {
     _maxBufferSize = maxBufferSize;
     _bufferWriteInterval =
         Stream.periodic(Duration(milliseconds: bufferWriteInterval), (i) {
@@ -58,26 +61,30 @@ class FimberFileTree extends CustomFormatTree with CloseableTree {
     }
   }
 
-  Future _flushBuffer(List<String> buffer) async {
-    if (buffer.isNotEmpty) {
-      IOSink? logSink;
-      try {
-        // check if file's directory exists
-        final parentDir = File(outputFileName).parent;
-        if (!parentDir.existsSync()) {
-          parentDir.createSync(recursive: true);
+  Future<void> _flushBuffer(List<String> buffer) => synchronized(() async {
+        if (buffer.isNotEmpty) {
+          IOSink? logSink;
+          final file = File(outputFileName);
+          try {
+            // check if file's directory exists
+            final parentDir = file.parent;
+            if (!parentDir.existsSync()) {
+              parentDir.createSync(recursive: true);
+            }
+            logSink = file.openWrite(mode: FileMode.writeOnlyAppend);
+            for (var newLine in buffer) {
+              logSink.writeln(newLine);
+            }
+            await logSink.flush();
+          } finally {
+            await logSink?.close();
+          }
+          try {
+            final fileSize = file.lengthSync();
+            onBufferFlushed(file.path, fileSize);
+          } on FileSystemException catch (_) {}
         }
-        logSink =
-            File(outputFileName).openWrite(mode: FileMode.writeOnlyAppend);
-        for (var newLine in buffer) {
-          logSink.writeln(newLine);
-        }
-        await logSink.flush();
-      } finally {
-        await logSink?.close();
-      }
-    }
-  }
+      });
 
   /// Creates Fimber File tree with time tracking as elapsed
   /// from start of the process.
@@ -110,17 +117,26 @@ class FimberFileTree extends CustomFormatTree with CloseableTree {
 /// SizeRolling file tree.
 /// It will create new log file with an index every time current
 /// one reach [maxDataSize]
-class SizeRollingFileTree extends RollingFileTree {
+class SizeRollingFileTree extends FimberFileTree {
   /// Maximum size allowed for the log file before rolls to new.
   DataSize maxDataSize;
 
-  /// Filename prefix - can contain path to directory where logs would be saved.
+  /// Directory where logs would be saved.
+  String directory;
+
+  /// Filename prefix.
   /// by default "log_"
   String filenamePrefix;
 
   /// Filename postfix, by default ".txt".
   String filenamePostfix;
 
+  /// The maximum amount of log file would be saved.
+  int maxAmountOfFile;
+
+  List<int> _logFileListIndexes = [];
+
+  /// Current log file index.
   int _fileIndex = 0;
 
   /// Creates instance of SizeRollingFileTree,
@@ -128,46 +144,43 @@ class SizeRollingFileTree extends RollingFileTree {
   /// will create new log file.
   SizeRollingFileTree(this.maxDataSize,
       {logFormat = CustomFormatTree.defaultFormat,
+      this.directory = '',
       this.filenamePrefix = 'log_',
       this.filenamePostfix = '.txt',
+      this.maxAmountOfFile = 10,
       logLevels = CustomFormatTree.defaultLevels})
-      : super(logFormat: logFormat, logLevels: logLevels) {
+      : super('.', logFormat: logFormat, logLevels: logLevels) {
     detectFileIndex();
   }
 
   /// Detects file index based on same [filenamePrefix] and [filenamePostfix]
   /// and based on current files in the log directory.
   void detectFileIndex() {
-    var rootDir = Directory(filenamePrefix);
+    var rootDir = Directory(directory);
     if (!rootDir.existsSync()) {
       /// no files created yet.
       _fileIndex = 0;
-      rollToNextFile();
+      _rollToNextFile();
       return;
     }
-    if (filenamePrefix.contains(Platform.pathSeparator)) {
-      rootDir = Directory(filenamePrefix.substring(
-          0, filenamePrefix.lastIndexOf(Platform.pathSeparator)));
-    }
-    var logListIndexes = rootDir
+    _logFileListIndexes = rootDir
         .listSync()
         .map((fe) => getLogIndex(fe.path))
         .where((i) => i >= 0)
         .toList();
-    logListIndexes.sort();
-    print('log list indexes: $logListIndexes');
-    if (logListIndexes.isNotEmpty) {
-      var max = logListIndexes.last;
+    _logFileListIndexes.sort();
+    print('Fimber-IO: log list indexes: $_logFileListIndexes');
+    if (_logFileListIndexes.isNotEmpty) {
+      var max = _logFileListIndexes.last;
       _fileIndex = max;
       if (_isFileOverSize(_logFile(max))) {
-        rollToNextFile();
+        _rollToNextFile();
       } else {
         outputFileName = _currentFile();
-        print('Logfile is $outputFileName');
       }
     } else {
       _fileIndex = 0;
-      rollToNextFile();
+      _rollToNextFile();
     }
   }
 
@@ -175,31 +188,11 @@ class SizeRollingFileTree extends RollingFileTree {
     return _logFile(_fileIndex);
   }
 
-  String _logFile(int index) {
-    return filenamePrefix + index.toString() + filenamePostfix;
-  }
-
-  @override
-  void rollToNextFile() {
-    _fileIndex = _fileIndex + 1;
-    outputFileName = _currentFile();
-    if (File(outputFileName).existsSync()) {
-      File(outputFileName).deleteSync();
-    }
-  }
+  String _logFile(int index) =>
+      '$directory/$filenamePrefix$index$filenamePostfix';
 
   bool _isFileOverSize(String path) {
     var file = File(path);
-    if (file.existsSync()) {
-      return File(path).lengthSync() > maxDataSize.realSize;
-    } else {
-      return false;
-    }
-  }
-
-  @override
-  FutureOr<bool> shouldRollNextFile() {
-    var file = File(_currentFile());
     if (file.existsSync()) {
       return file.lengthSync() > maxDataSize.realSize;
     } else {
@@ -236,6 +229,36 @@ class SizeRollingFileTree extends RollingFileTree {
         return false;
       }
     }).lastWhere((_) => true, orElse: () => false);
+  }
+
+  void _rollToNextFile() {
+    _fileIndex = DateTime.now().millisecondsSinceEpoch;
+    outputFileName = _currentFile();
+    final outputFile = File(outputFileName);
+    if (outputFile.existsSync()) {
+      outputFile.deleteSync();
+    }
+    _logFileListIndexes.add(_fileIndex);
+
+    /// remove old log file.
+    var deleteCount = _logFileListIndexes.length - maxAmountOfFile;
+    final indexes = List.from(_logFileListIndexes);
+    if (deleteCount > 0) {
+      for (var i = 0; i < deleteCount; i++) {
+        final file = File(_logFile(indexes[i]));
+        if (file.existsSync()) {
+          file.deleteSync();
+        }
+        _logFileListIndexes.removeAt(i);
+      }
+    }
+  }
+
+  @override
+  void onBufferFlushed(String fileName, int fileSize) {
+    if (fileName == outputFileName && fileSize > maxDataSize.realSize) {
+      _rollToNextFile();
+    }
   }
 }
 
@@ -325,4 +348,8 @@ abstract class RollingFileTree extends FimberFileTree {
     }
     super.printLine(line, level: level);
   }
+}
+
+abstract class FileSizeListenable {
+  void onBufferFlushed(String fileName, int fileSize) {}
 }
