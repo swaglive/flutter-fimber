@@ -35,11 +35,11 @@ class SizeRollingFileTree extends RollingFileTree {
       rollToNextFile();
       return;
     }
-    if (_isFileOverSize(logFile(fileIdList.last))) {
+    if (_isFileOverSize(logFileFromId(fileIdList.last))) {
       rollToNextFile();
     } else {
       currentFileId = fileIdList.last;
-      outputFileName = logFile(currentFileId);
+      outputFileName = logFileFromId(currentFileId);
     }
   }
 

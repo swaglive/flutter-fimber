@@ -123,8 +123,8 @@ void main() async {
 
       await Future.delayed(Duration(milliseconds: 100));
 
-      final firstFile = logTree.logFile(logTree.fileIdList[0]);
-      var secondFile = logTree.logFile(logTree.fileIdList[1]);
+      final firstFile = logTree.logFileFromId(logTree.fileIdList[0]);
+      var secondFile = logTree.logFileFromId(logTree.fileIdList[1]);
 
       await Future.delayed(Duration(milliseconds: 100));
       // wait until buffer dumps to file
@@ -212,7 +212,7 @@ void main() async {
       await waitForAppendBuffer();
 
       await Future.delayed(Duration(milliseconds: 200));
-      var logFile1 = logTree.logFile(logTree.fileIdList[0]);
+      var logFile1 = logTree.logFileFromId(logTree.fileIdList[0]);
 
       print(logFile1);
       expect(logFile1,
@@ -220,7 +220,7 @@ void main() async {
       Fimber.i('Log single line - B');
       await waitForAppendBuffer();
       await Future.delayed(Duration(milliseconds: 200));
-      var logFile2 = logTree.logFile(logTree.fileIdList[1]);
+      var logFile2 = logTree.logFileFromId(logTree.fileIdList[1]);
 
       print(logFile2);
       expect(logFile2,
@@ -230,7 +230,7 @@ void main() async {
       Fimber.i('Log single line - C with some chars');
       await waitForAppendBuffer();
 
-      var logFile3 = logTree.logFile(logTree.fileIdList[2]);
+      var logFile3 = logTree.logFileFromId(logTree.fileIdList[2]);
       print(logFile3);
       expect(logFile3,
           '$testDirName${dirSeparator}log_${logTree.fileIdList[2]}.txt');
@@ -264,8 +264,8 @@ void main() async {
       // wait until buffer dumps to file
       await waitForAppendBuffer();
 
-      final firstFile = logTree.logFile(logTree.fileIdList[0]);
-      final secondFile = logTree.logFile(logTree.fileIdList[1]);
+      final firstFile = logTree.logFileFromId(logTree.fileIdList[0]);
+      final secondFile = logTree.logFileFromId(logTree.fileIdList[1]);
 
       assert(firstFile != secondFile);
       print(firstFile);

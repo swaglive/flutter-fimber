@@ -42,7 +42,7 @@ class TimedRollingFileTree extends RollingFileTree {
       return;
     }
     currentFileId = fileIdList.last;
-    outputFileName = logFile(currentFileId);
+    outputFileName = logFileFromId(currentFileId);
   }
 
   @override

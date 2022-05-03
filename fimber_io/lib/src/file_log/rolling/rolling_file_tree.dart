@@ -56,23 +56,30 @@ abstract class RollingFileTree extends FileTree {
   }
 
   String currentFile() {
-    return logFile(currentFileId);
+    final fileName =
+        DateTime.fromMillisecondsSinceEpoch(currentFileId).toIso8601String();
+    return logFile(fileName);
   }
 
-  String logFile(int index) =>
-      '$directory/$filenamePrefix$index$filenamePostfix';
+  String logFileFromId(int id) {
+    return logFile(DateTime.fromMillisecondsSinceEpoch(id).toIso8601String());
+  }
 
-  RegExp get _fileRegExp => RegExp(
-      '${filenamePrefix.replaceAll("\\", "\\\\")}([0-9]+)?$filenamePostfix');
+  String logFile(String fileName) =>
+      '$directory/$filenamePrefix$fileName$filenamePostfix';
+
+  RegExp get _fileRegExp =>
+      RegExp('${r'\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(([+-]\d\d:\d\d)|Z)?'}',
+          caseSensitive: false);
 
   /// Gets log index from a file path.
   int getLogIndex(String filePath) {
     if (isLogFile(filePath)) {
       return _fileRegExp.allMatches(filePath).map((match) {
         if (match.groupCount > 0) {
-          var parseGroup = match.group(1);
+          final parseGroup = match.group(0);
           if (parseGroup != null) {
-            return int.parse(parseGroup);
+            return DateTime.tryParse(parseGroup)?.millisecondsSinceEpoch ?? -1;
           }
         }
         return -1;
