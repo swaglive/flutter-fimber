@@ -16,12 +16,13 @@ class DataSize {
   int realSize = 0;
 
   /// Create DataSize object with predefined size as optional.
-  DataSize(
-      {int kilobytes = 0,
-      int megabytes = 0,
-      int gigabytes = 0,
-      int terabytes = 0,
-      int bytes = 0}) {
+  DataSize({
+    int kilobytes = 0,
+    int megabytes = 0,
+    int gigabytes = 0,
+    int terabytes = 0,
+    int bytes = 0,
+  }) {
     realSize = bytes;
     realSize += kilobytes * bytesInKilo;
     realSize += megabytes * byteInMega;
@@ -32,15 +33,15 @@ class DataSize {
   @override
   String toString() {
     if (realSize / bytesInTera > 0) {
-      return "${realSize / bytesInTera} TB";
+      return '${realSize / bytesInTera} TB';
     } else if (realSize / bytesInGiga > 0) {
-      return "${realSize / bytesInGiga} GB";
+      return '${realSize / bytesInGiga} GB';
     } else if (realSize / byteInMega > 0) {
-      return "${realSize / byteInMega} MB";
+      return '${realSize / byteInMega} MB';
     } else if (realSize / bytesInKilo > 0) {
-      return "${realSize / bytesInKilo} KB";
+      return '${realSize / bytesInKilo} KB';
     }
-    return "$realSize B";
+    return '$realSize B';
   }
 
   /// Creates DataSize object with bytes value.
