@@ -60,7 +60,7 @@ class TimedRollingFileTree extends RollingFileTree {
 
   @override
   void rollToNextFile() {
-    currentFileId = DateTime.now().millisecondsSinceEpoch;
+    currentFileId = getCurrentIndex();
     outputFileName = currentFile();
     final outputFile = File(outputFileName);
     if (outputFile.existsSync()) {
@@ -69,10 +69,10 @@ class TimedRollingFileTree extends RollingFileTree {
     fileIdList.add(currentFileId);
 
     /// remove old log file.
-    var deleteCount = fileIdList.length - maxAmountOfFile;
+    final int deleteCount = fileIdList.length - maxAmountOfFile;
     final indexes = List.from(fileIdList);
     if (deleteCount > 0) {
-      for (var i = 0; i < deleteCount; i++) {
+      for (int i = 0; i < deleteCount; i++) {
         final file = File(logFile(indexes[i]));
         if (file.existsSync()) {
           file.deleteSync();

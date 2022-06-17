@@ -52,7 +52,7 @@ class SizeRollingFileTree extends RollingFileTree {
 
   @override
   void rollToNextFile() {
-    currentFileId = DateTime.now().millisecondsSinceEpoch;
+    currentFileId = getCurrentIndex();
     outputFileName = currentFile();
     final outputFile = File(outputFileName);
     if (outputFile.existsSync()) {
@@ -61,10 +61,10 @@ class SizeRollingFileTree extends RollingFileTree {
     fileIdList.add(currentFileId);
 
     /// remove old log file.
-    var deleteCount = fileIdList.length - maxAmountOfFile;
+    final int deleteCount = fileIdList.length - maxAmountOfFile;
     final indexes = List.from(fileIdList);
     if (deleteCount > 0) {
-      for (var i = 0; i < deleteCount; i++) {
+      for (int i = 0; i < deleteCount; i++) {
         final file = File(logFile(indexes[i]));
         if (file.existsSync()) {
           file.deleteSync();
@@ -75,7 +75,7 @@ class SizeRollingFileTree extends RollingFileTree {
   }
 
   bool _isFileOverSize(String path) {
-    var file = File(path);
+    final File file = File(path);
     if (file.existsSync()) {
       return file.lengthSync() > maxDataSize.realSize;
     } else {

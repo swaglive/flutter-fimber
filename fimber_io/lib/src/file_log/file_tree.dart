@@ -77,7 +77,7 @@ abstract class FileTree extends CustomFormatTree
               parentDir.createSync(recursive: true);
             }
             logSink = file.openWrite(mode: FileMode.writeOnlyAppend);
-            for (var newLine in buffer) {
+            for (final String newLine in buffer) {
               logSink.writeln(newLine);
             }
             await logSink.flush();
@@ -93,7 +93,8 @@ abstract class FileTree extends CustomFormatTree
 
   @override
   void printLine(String line, {String? level}) {
-    var colorizeWrapper = (level != null) ? colorizeMap[level] : null;
+    final ColorizeStyle? colorizeWrapper =
+        (level != null) ? colorizeMap[level] : null;
     if (colorizeWrapper != null) {
       _buffers.add(colorizeWrapper.wrap(line));
     } else {
