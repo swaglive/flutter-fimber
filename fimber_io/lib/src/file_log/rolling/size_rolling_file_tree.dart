@@ -65,7 +65,7 @@ class SizeRollingFileTree extends RollingFileTree {
     final indexes = List.from(fileIdList);
     if (deleteCount > 0) {
       for (int i = 0; i < deleteCount; i++) {
-        final file = File(logFile(indexes[i]));
+        final file = File(logFileFromId(indexes[i]));
         if (file.existsSync()) {
           file.deleteSync();
         }
