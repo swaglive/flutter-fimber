@@ -129,9 +129,9 @@ class ColorizeStyle {
 
   /// Wraps a text with list of AnsiStyles.
   String wrap(String text, {List<AnsiStyle> additionalStyles = const []}) {
-    var styles = List.from(_styles)..addAll(additionalStyles);
-    var retString = text;
-    for (var style in styles) {
+    final List<AnsiStyle> styles = List.from(_styles)..addAll(additionalStyles);
+    String retString = text;
+    for (final AnsiStyle style in styles) {
       retString = style.apply(retString);
     }
     return retString;
@@ -167,60 +167,68 @@ class Colorize {
   bool underline = false;
 
   /// Creates Colorize class with defined styles.
-  Colorize(
-      {this.foreground,
-      this.background,
-      this.bright,
-      this.reverse = false,
-      this.underline = false});
+  Colorize({
+    this.foreground,
+    this.background,
+    this.bright,
+    this.reverse = false,
+    this.underline = false,
+  });
 
   /// Wraps text into the defined styles with option to override a style.
-  String wrap(String text,
-      {AnsiColor? foreground,
-      AnsiColor? background,
-      AnsiColor? bright,
-      bool? reverse,
-      bool? underline}) {
-    var underlineStyle = (underline ?? false) ? underline : this.underline;
+  String wrap(
+    String text, {
+    AnsiColor? foreground,
+    AnsiColor? background,
+    AnsiColor? bright,
+    bool? reverse,
+    bool? underline,
+  }) {
+    final bool? underlineStyle =
+        (underline ?? false) ? underline : this.underline;
 
-    var rvStyle = (reverse ?? false) ? reverse : this.reverse;
+    final bool? rvStyle = (reverse ?? false) ? reverse : this.reverse;
 
-    var fgColor = (foreground != null)
+    final AnsiColor? fgColor = (foreground != null)
         ? foreground
         : (this.foreground != null)
             ? this.foreground
             : null;
 
-    var bgColor = (background != null)
+    final AnsiColor? bgColor = (background != null)
         ? background
         : (this.background != null)
             ? this.background
             : null;
-    var brColor = (bright != null)
+    final AnsiColor? brColor = (bright != null)
         ? bright
         : (this.bright != null)
             ? this.bright
             : null;
-    return wrapWith(text,
-        background: bgColor,
-        foreground: fgColor,
-        bright: brColor,
-        reverse: rvStyle,
-        underline: underlineStyle);
+    return wrapWith(
+      text,
+      background: bgColor,
+      foreground: fgColor,
+      bright: brColor,
+      reverse: rvStyle,
+      underline: underlineStyle,
+    );
   }
 
   /// Wraps text with provided styles.
-  static String wrapWith(String text,
-      {AnsiColor? background,
-      AnsiColor? foreground,
-      AnsiColor? bright,
-      bool? reverse,
-      bool? underline}) {
-    var retString = text;
+  static String wrapWith(
+    String text, {
+    AnsiColor? background,
+    AnsiColor? foreground,
+    AnsiColor? bright,
+    bool? reverse,
+    bool? underline,
+  }) {
+    String retString = text;
     if (reverse ?? false) {
       // if reverse and background/foreground are specified we should reverse their colors
       if (background != null || foreground != null || bright != null) {
-        var tmp = background;
+        AnsiColor? tmp = background;
         background = foreground ?? bright;
         foreground = tmp;
       } else {
@@ -242,13 +250,15 @@ class Colorize {
     return retString;
   }
 
-  static String _wrapSingle(String text,
-      {AnsiColor? foreground,
-      AnsiColor? background,
-      AnsiColor? bright,
-      bool? blink}) {
-    var style = _foregroundType;
-    var color = foreground;
+  static String _wrapSingle(
+    String text, {
+    AnsiColor? foreground,
+    AnsiColor? background,
+    AnsiColor? bright,
+    bool? blink,
+  }) {
+    String style = _foregroundType;
+    AnsiColor? color = foreground;
     if (blink ?? false) {
       style = _blinkType;
       color = background;
@@ -271,6 +281,6 @@ class Colorize {
   }
 
   static String _wrapAnsi(String text, String ansiCode) {
-    return "$_cmdCode${ansiCode}m$text$_resetCode";
+    return '$_cmdCode${ansiCode}m$text$_resetCode';
   }
 }

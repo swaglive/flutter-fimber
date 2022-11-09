@@ -8,32 +8,57 @@ class Fimber {
 
   /// Logs VERBOSE level [message]
   /// with optional exception and stacktrace
-  static void v(String message, {dynamic? ex, StackTrace? stacktrace}) {
-    log("V", message, ex: ex, stacktrace: stacktrace);
+  static void v(
+    String message, {
+    String? tag,
+    dynamic ex,
+    StackTrace? stacktrace,
+  }) {
+    log("V", message, tag: tag, ex: ex, stacktrace: stacktrace);
   }
 
   /// Logs DEBUG level [message]
   /// with optional exception and stacktrace
-  static void d(String message, {dynamic? ex, StackTrace? stacktrace}) {
-    log("D", message, ex: ex, stacktrace: stacktrace);
+  static void d(
+    String message, {
+    String? tag,
+    dynamic ex,
+    StackTrace? stacktrace,
+  }) {
+    log("D", message, tag: tag, ex: ex, stacktrace: stacktrace);
   }
 
   /// Logs INFO level [message]
   /// with optional exception and stacktrace
-  static void i(String message, {dynamic? ex, StackTrace? stacktrace}) {
-    log("I", message, ex: ex, stacktrace: stacktrace);
+  static void i(
+    String message, {
+    String? tag,
+    dynamic ex,
+    StackTrace? stacktrace,
+  }) {
+    log("I", message, tag: tag, ex: ex, stacktrace: stacktrace);
   }
 
   /// Logs WARNING level [message]
   /// with optional exception and stacktrace
-  static void w(String message, {dynamic? ex, StackTrace? stacktrace}) {
-    log("W", message, ex: ex, stacktrace: stacktrace);
+  static void w(
+    String message, {
+    String? tag,
+    dynamic ex,
+    StackTrace? stacktrace,
+  }) {
+    log("W", message, tag: tag, ex: ex, stacktrace: stacktrace);
   }
 
   /// Logs ERROR level [message]
   /// with optional exception and stacktrace
-  static void e(String message, {dynamic ex, StackTrace? stacktrace}) {
-    log("E", message, ex: ex, stacktrace: stacktrace);
+  static void e(
+    String message, {
+    String? tag,
+    dynamic ex,
+    StackTrace? stacktrace,
+  }) {
+    log("E", message, tag: tag, ex: ex, stacktrace: stacktrace);
   }
 
   /// Mute a log [level] for logging.
@@ -51,20 +76,20 @@ class Fimber {
   /// Logs a [message] with provided [level]
   /// and optional [tag], [ex] and [stacktrace]
   static void log(String level, String message,
-      {String? tag, dynamic? ex, StackTrace? stacktrace}) {
+      {String? tag, dynamic ex, StackTrace? stacktrace}) {
     if (_muteLevels.contains(level)) {
       return; // skip logging if muted.
     }
-    var loggersForTree = _trees[level];
-    for (var logger in loggersForTree ?? []) {
+    final List<LogTree>? loggersForTree = _trees[level];
+    for (final LogTree logger in loggersForTree ?? []) {
       logger.log(level, message, tag: tag, ex: ex, stacktrace: stacktrace);
     }
   }
 
   /// Plant a tree - the source that will receive log messages.
   static void plantTree(LogTree tree) {
-    for (var level in tree.getLevels()) {
-      var logList = _trees[level];
+    for (final String level in tree.getLevels()) {
+      List<LogTree>? logList = _trees[level];
       if (logList == null) {
         logList = [];
         _trees[level] = logList;
@@ -74,7 +99,6 @@ class Fimber {
         (tree as UnPlantableTree).planted();
       }
     }
-    ;
   }
 
   /// Un-plants a tree from
@@ -117,7 +141,7 @@ class Fimber {
   /// with a logger to use.
   /// Removing need of tag generation.
   static dynamic withTag(String tag, RunWithLog block) {
-    var logger = FimberLog(tag);
+    final FimberLog logger = FimberLog(tag);
     return block(logger);
   }
 }
@@ -163,10 +187,11 @@ class DebugTree extends LogTree {
 
   /// Creates DebugTree with defaults
   /// or with defined [printTimeType], [logLevels], [useColors]
-  DebugTree(
-      {this.printTimeType = timeClockType,
-      this.logLevels = defaultLevels,
-      bool useColors = false}) {
+  DebugTree({
+    this.printTimeType = timeClockType,
+    this.logLevels = defaultLevels,
+    bool useColors = false,
+  }) {
     if (printTimeType == timeElapsedType) {
       _elapsedTimeStopwatch.reset();
       _elapsedTimeStopwatch.start();
@@ -178,8 +203,10 @@ class DebugTree extends LogTree {
 
   /// Creates elapsed time type Debug log tree
   /// with optional [logLevels] and [useColors]
-  factory DebugTree.elapsed(
-      {List<String> logLevels = defaultLevels, bool useColors = false}) {
+  factory DebugTree.elapsed({
+    List<String> logLevels = defaultLevels,
+    bool useColors = false,
+  }) {
     return DebugTree(
         logLevels: logLevels,
         printTimeType: timeElapsedType,
@@ -189,17 +216,23 @@ class DebugTree extends LogTree {
   /// Logs [message] with [level]
   /// and optional [tag], [ex] (exception, [stacktrace]
   @override
-  void log(String level, String message,
-      {String? tag, dynamic? ex, StackTrace? stacktrace}) {
-    var logTag = tag ?? LogTree.getTag();
-    final logLineBuilder = StringBuffer("$level\t$logTag:\t $message");
+  void log(
+    String level,
+    String message, {
+    String? tag,
+    dynamic ex,
+    StackTrace? stacktrace,
+  }) {
+    String logTag = tag ?? LogTree.getTag();
+    final StringBuffer logLineBuilder =
+        StringBuffer("$level [$logTag]\t$message");
 
     if (ex != null) {
       logLineBuilder.write("\n${ex.toString()}");
     }
     if (stacktrace != null) {
-      var tmpStacktrace = stacktrace.toString().split('\n');
-      var stackTraceMessage =
+      final List<String> tmpStacktrace = stacktrace.toString().split('\n');
+      final String stackTraceMessage =
           tmpStacktrace.map((stackLine) => "\t$stackLine").join("\n");
       logLineBuilder.write("\n$stackTraceMessage");
     }
@@ -209,18 +242,21 @@ class DebugTree extends LogTree {
   /// Method to overload printing to output stream the formatted [logLine]
   /// Adds handing of time
   void printLog(String logLine, {String? level}) {
-    var printableLine = logLine;
+    String printableLine = logLine;
     if (printTimeType == timeElapsedType) {
-      var timeElapsed = _elapsedTimeStopwatch.elapsed.toString();
+      final String timeElapsed = _elapsedTimeStopwatch.elapsed.toString();
       printableLine = "$timeElapsed\t$logLine";
     } else {
-      var date = DateTime.now().toIso8601String();
+      final String date = DateTime.now().toIso8601String();
       printableLine = "$date\t$logLine";
     }
-    var colorizeTransform = (level != null) ? colorizeMap[level] : null;
+    final ColorizeStyle? colorizeTransform =
+        (level != null) ? colorizeMap[level] : null;
     if (colorizeTransform != null) {
+      // ignore: avoid_print
       print(colorizeTransform.wrap(printableLine));
     } else {
+      // ignore: avoid_print
       print(printableLine);
     }
   }
@@ -257,11 +293,12 @@ class LogLineInfo {
   int characterIndex;
 
   /// Creates LogLineInfo instance.
-  LogLineInfo(
-      {required this.tag,
-      this.logFilePath,
-      this.lineNumber = 0,
-      this.characterIndex = 0});
+  LogLineInfo({
+    required this.tag,
+    this.logFilePath,
+    this.lineNumber = 0,
+    this.characterIndex = 0,
+  });
 }
 
 /// Interface for LogTree
@@ -270,8 +307,13 @@ abstract class LogTree {
 
   /// Logs [message] with log [level]
   /// and optional [tag], [ex] (exception) [stacktrace]
-  void log(String level, String message,
-      {String tag, dynamic ex, StackTrace stacktrace});
+  void log(
+    String level,
+    String message, {
+    String? tag,
+    dynamic ex,
+    StackTrace? stacktrace,
+  });
 
   /// Gets levels of logging serviced by this [LogTree]
   List<String> getLevels();
@@ -287,13 +329,14 @@ abstract class LogTree {
     /// group 3 = line number
     /// group 4 = column
     /// "#4      main.<anonymous closure>.<anonymous closure> (file:///Users/magillus/Projects/opensource/flutter-fimber/fimber/test/fimber_test.dart:19:14)"
-    var stackTraceList = StackTrace.current.toString().split('\n');
+    final List<String> stackTraceList =
+        StackTrace.current.toString().split('\n');
     if (stackTraceList.length > stackIndex) {
-      var logline = stackTraceList[stackIndex];
-      final matches = _logMatcher.allMatches(logline);
+      final String logline = stackTraceList[stackIndex];
+      final Iterable<RegExpMatch> matches = _logMatcher.allMatches(logline);
 
       if (matches.isNotEmpty) {
-        final match = matches.first;
+        final RegExpMatch match = matches.first;
         return LogLineInfo(
           tag: match
                   .group(1)
@@ -315,15 +358,16 @@ abstract class LogTree {
   /// Gets tag with [stackIndex],
   /// how many steps in stacktrace should be taken to grab log call.
   static String getTag({int stackIndex = 4}) {
-    var stackTraceList = StackTrace.current.toString().split('\n');
+    final List<String> stackTraceList =
+        StackTrace.current.toString().split('\n');
     if (stackTraceList.length > stackIndex) {
-      var lineChunks =
+      final String lineChunks =
           stackTraceList[stackIndex].replaceAll("<anonymous closure>", "<ac>");
       if (lineChunks.length > 6) {
-        var lineParts = lineChunks.split(' ');
+        final List<String> lineParts = lineChunks.split(' ');
         if (lineParts.length > 8 && lineParts[6] == 'new') {
           // constructor logging
-          return "${lineParts[6]} ${lineParts[7]}";
+          return '${lineParts[6]} ${lineParts[7]}';
         } else if (lineParts.length > 6) {
           return lineParts[6];
         } else {
@@ -337,11 +381,22 @@ abstract class LogTree {
     }
   }
 
+  static List<String> getStacktraceList(StackTrace stackTrace,
+      {int maxStackIndex = 6}) {
+    final List<String> stackTraceList = stackTrace.toString().split('\n');
+    if (stackTraceList.isEmpty) return [];
+    return stackTraceList.sublist(
+      0,
+      stackTraceList.length < maxStackIndex
+          ? stackTraceList.length
+          : maxStackIndex,
+    );
+  }
+
   /// Gets tag with [stackIndex]
   /// how many steps in stacktrace should be taken to grab log call.
-  static List<String> getStacktrace({int stackIndex = 6}) {
-    var stackTraceList = StackTrace.current.toString().split('\n');
-    return stackTraceList.sublist(stackIndex);
+  static List<String> getStacktrace({int maxStackIndex = 6}) {
+    return getStacktraceList(StackTrace.current);
   }
 }
 
@@ -355,38 +410,38 @@ class FimberLog {
 
   /// Logs VERBOSE level [message]
   /// with optional exception and stacktrace
-  void v(String message, {dynamic? ex, StackTrace? stacktrace}) {
+  void v(String message, {dynamic ex, StackTrace? stacktrace}) {
     _log("V", tag, message, ex: ex, stacktrace: stacktrace);
   }
 
   /// Logs DEBUG level [message]
   /// with optional exception and stacktrace
-  void d(String message, {dynamic? ex, StackTrace? stacktrace}) {
+  void d(String message, {dynamic ex, StackTrace? stacktrace}) {
     _log("D", tag, message, ex: ex, stacktrace: stacktrace);
   }
 
   /// Logs INFO level [message]
   /// with optional exception and stacktrace
-  void i(String message, {dynamic? ex, StackTrace? stacktrace}) {
+  void i(String message, {dynamic ex, StackTrace? stacktrace}) {
     _log("I", tag, message, ex: ex, stacktrace: stacktrace);
   }
 
   /// Logs WARNING level [message]
   /// with optional exception and stacktrace
-  void w(String message, {dynamic? ex, StackTrace? stacktrace}) {
+  void w(String message, {dynamic ex, StackTrace? stacktrace}) {
     _log("W", tag, message, ex: ex, stacktrace: stacktrace);
   }
 
   /// Logs ERROR level [message]
   /// with optional exception and stacktrace
-  void e(String message, {dynamic? ex, StackTrace? stacktrace}) {
+  void e(String message, {dynamic ex, StackTrace? stacktrace}) {
     _log("E", tag, message, ex: ex, stacktrace: stacktrace);
   }
 
   /// Logs [message] with [tag] and [level]
   /// with optional exception and [stacktrace]
   _log(String level, String tag, String message,
-      {dynamic? ex, StackTrace? stacktrace}) {
+      {dynamic ex, StackTrace? stacktrace}) {
     Fimber.log(level, message, tag: tag, ex: ex, stacktrace: stacktrace);
   }
 }
@@ -433,7 +488,7 @@ class CustomFormatTree extends LogTree {
 
   /// Default format for timestamp based log message.
   static const String defaultFormat =
-      "$timeStampToken\t$levelToken $tagToken: $messageToken";
+      "$timeStampToken\t$levelToken [$tagToken] $messageToken $exceptionMsgToken $exceptionStackToken";
 
   /// Flag elapsed time in format
   static const int timeElapsedFlag = 1;
@@ -471,10 +526,11 @@ class CustomFormatTree extends LogTree {
   Map<String, ColorizeStyle> colorizeMap = {};
 
   /// Creates custom format logging tree
-  CustomFormatTree(
-      {this.logFormat = defaultFormat,
-      List<String> logLevels = defaultLevels,
-      bool useColors = false}) {
+  CustomFormatTree({
+    this.logFormat = defaultFormat,
+    List<String> logLevels = defaultLevels,
+    bool useColors = false,
+  }) {
     _logLevels = logLevels;
     _useColors = useColors;
     if (_useColors) {
@@ -511,55 +567,83 @@ class CustomFormatTree extends LogTree {
   @override
 
   /// Logs a message with level/tag and optional stacktrace or exception.
-  void log(String level, String msg,
-      {String? tag, dynamic? ex, StackTrace? stacktrace}) {
-    LogLineInfo logTag;
-    logTag = LogTree.getLogLineInfo();
-    if (tag != null) {
-      logTag.tag = tag;
-    }
-    _printFormattedLog(level, msg, logTag, ex, stacktrace);
+  void log(
+    String level,
+    String msg, {
+    String? tag,
+    dynamic ex,
+    StackTrace? stacktrace,
+  }) {
+    final LogLineInfo logLineInfo = LogTree.getLogLineInfo();
+    _printFormattedLog(
+        level, msg, tag ?? LogTree.getTag(), logLineInfo, ex, stacktrace);
   }
 
   /// Prints log line with optional log level.
   void printLine(String line, {String? level}) {
-    var colorizeTransform = (level != null) ? colorizeMap[level] : null;
+    final ColorizeStyle? colorizeTransform =
+        (level != null) ? colorizeMap[level] : null;
     if (colorizeTransform != null) {
+      // ignore: avoid_print
       print(colorizeTransform.wrap(line));
     } else {
+      // ignore: avoid_print
       print(line);
     }
   }
 
-  void _printFormattedLog(String level, String msg, LogLineInfo logLineInfo, ex,
-      StackTrace? stacktrace) {
+  void _printFormattedLog(
+    String level,
+    String msg,
+    String tag,
+    LogLineInfo logLineInfo,
+    dynamic ex,
+    StackTrace? stacktrace,
+  ) {
     if (ex != null) {
-      var tmpStacktrace =
-          stacktrace?.toString().split('\n') ?? LogTree.getStacktrace();
-      var stackTraceMessage =
+      final List<String> tmpStacktrace =
+          stacktrace == null ? [] : LogTree.getStacktraceList(stacktrace);
+      final String stackTraceMessage =
           tmpStacktrace.map((stackLine) => "\t$stackLine").join("\n");
       printLine(
-          _formatLine(logFormat, level, msg, logLineInfo, "\n${ex.toString()}",
-              "\n$stackTraceMessage"),
-          level: level);
+        _formatLine(
+          logFormat,
+          level,
+          msg,
+          tag,
+          logLineInfo,
+          "\n${ex.toString()}",
+          "\n$stackTraceMessage",
+        ),
+        level: level,
+      );
     } else {
-      printLine(_formatLine(logFormat, level, msg, logLineInfo, "", ""),
-          level: level);
+      printLine(
+        _formatLine(logFormat, level, msg, tag, logLineInfo, "", ""),
+        level: level,
+      );
     }
   }
 
-  String _formatLine(String format, String level, String msg,
-      LogLineInfo logLineInfo, String exMsg, String stacktrace) {
-    var date = DateTime.now().toIso8601String();
-    var elapsed = _elapsedTimeStopwatch?.elapsed.toString() ?? '';
+  String _formatLine(
+    String format,
+    String level,
+    String msg,
+    String tag,
+    LogLineInfo logLineInfo,
+    String exMsg,
+    String stacktrace,
+  ) {
+    final String date = DateTime.now().toIso8601String();
+    final String elapsed = _elapsedTimeStopwatch?.elapsed.toString() ?? '';
 
-    var logLine = _replaceAllSafe(logFormat, timeStampToken, date);
+    String logLine = _replaceAllSafe(logFormat, timeStampToken, date);
     logLine = _replaceAllSafe(logLine, timeElapsedToken, elapsed);
     logLine = _replaceAllSafe(logLine, levelToken, level);
     logLine = _replaceAllSafe(logLine, messageToken, msg);
     logLine = _replaceAllSafe(logLine, exceptionMsgToken, exMsg);
     logLine = _replaceAllSafe(logLine, exceptionStackToken, stacktrace);
-    logLine = _replaceAllSafe(logLine, tagToken, logLineInfo.tag);
+    logLine = _replaceAllSafe(logLine, tagToken, tag);
     if (_printFilePath) {
       logLine = _replaceAllSafe(
           logLine, filePathToken, logLineInfo.logFilePath ?? '');
@@ -584,19 +668,6 @@ class CustomFormatTree extends LogTree {
       return text.replaceAll(token, data);
     }
     return text;
-  }
-
-  /// Method to overload printing to output stream the formatted logline
-  /// Adds handing of time
-  void printLog(String logLine, {String? level}) {
-    if (_printTimeFlag & timeElapsedFlag > 0) {
-      var timeElapsed =
-          _elapsedTimeStopwatch?.elapsed.toString() ?? "xx:xx:xxx";
-      printLine("$timeElapsed\t$logLine", level: level);
-    } else {
-      var date = DateTime.now().toIso8601String();
-      printLine("$date\t$logLine", level: level);
-    }
   }
 
   @override
