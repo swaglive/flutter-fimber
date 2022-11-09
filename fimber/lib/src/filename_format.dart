@@ -2,27 +2,27 @@
 /// with TimedRollingFileTree.
 ///
 class LogFileNameFormatter {
-  static const _year2charToken = "YY";
-  static const _fullYearToken = "YYYY";
-  static const _month2charToken = "MM";
-  static const _month3charToken = "MMM";
-  static const _monthToken = "MMMM";
-  static const _dayToken = "DD";
-  static const _dayOfWeekToken = "ddd";
-  static const _hour12Token = "hh";
-  static const _hour24Token = "HH";
-  static const _hourPmAmToken = "aa";
-  static const _minutesToken = "mm";
-  static const _secondsToken = "SS";
+  static const _year2charToken = 'YY';
+  static const _fullYearToken = 'YYYY';
+  static const _month2charToken = 'MM';
+  static const _month3charToken = 'MMM';
+  static const _monthToken = 'MMMM';
+  static const _dayToken = 'DD';
+  static const _dayOfWeekToken = 'ddd';
+  static const _hour12Token = 'hh';
+  static const _hour24Token = 'HH';
+  static const _hourPmAmToken = 'aa';
+  static const _minutesToken = 'mm';
+  static const _secondsToken = 'SS';
 
-  static const _dayFormat = "$_fullYearToken$_month2charToken$_dayToken";
-  static const _timeFormat = "$_hour24Token$_minutesToken$_secondsToken";
+  static const _dayFormat = '$_fullYearToken$_month2charToken$_dayToken';
+  static const _timeFormat = '$_hour24Token$_minutesToken$_secondsToken';
 
   /// Filename format for files created with this formatter.
-  String filenameFormat = "log_YYMMDD-HH.txt";
+  String filenameFormat = 'log_YYMMDD-HH.txt';
 
   /// Creates LogFileNameFormatter with given format or by default
-  LogFileNameFormatter({this.filenameFormat = "log_YYMMDD-HH.txt"});
+  LogFileNameFormatter({this.filenameFormat = 'log_YYMMDD-HH.txt'});
 
   /// Factory method to create date and time filename formatter with
   /// prefix and postfix.
@@ -96,30 +96,30 @@ class LogFileNameFormatter {
 
   String _amPmHour(int hour) {
     if (hour > 12) {
-      return "pm";
+      return 'pm';
     } else {
-      return "am";
+      return 'am';
     }
   }
 
   String _dayOfWeek(int day) {
     switch (day) {
       case DateTime.monday:
-        return "Mon";
+        return 'Mon';
       case DateTime.tuesday:
-        return "Tue";
+        return 'Tue';
       case DateTime.wednesday:
-        return "Wed";
+        return 'Wed';
       case DateTime.thursday:
-        return "Thu";
+        return 'Thu';
       case DateTime.friday:
-        return "Fri";
+        return 'Fri';
       case DateTime.saturday:
-        return "Sat";
+        return 'Sat';
       case DateTime.sunday:
-        return "Sun";
+        return 'Sun';
       default:
-        return "NA";
+        return 'NA';
     }
   }
 
@@ -127,31 +127,31 @@ class LogFileNameFormatter {
     switch (month) {
       // todo internationalization from external file
       case 1:
-        return "Jan";
+        return 'Jan';
       case 2:
-        return "Feb";
+        return 'Feb';
       case 3:
-        return "Mar";
+        return 'Mar';
       case 4:
-        return "Arp";
+        return 'Arp';
       case 5:
-        return "May";
+        return 'May';
       case 6:
-        return "Jun";
+        return 'Jun';
       case 7:
-        return "Jul";
+        return 'Jul';
       case 8:
-        return "Aug";
+        return 'Aug';
       case 9:
-        return "Sep";
+        return 'Sep';
       case 10:
-        return "Oct";
+        return 'Oct';
       case 11:
-        return "Nov";
+        return 'Nov';
       case 12:
-        return "Dec";
+        return 'Dec';
       default:
-        return "NA";
+        return 'NA';
     }
   }
 
@@ -159,31 +159,31 @@ class LogFileNameFormatter {
     switch (month) {
       // todo internationalization from external file
       case 1:
-        return "January";
+        return 'January';
       case 2:
-        return "February";
+        return 'February';
       case 3:
-        return "March";
+        return 'March';
       case 4:
-        return "Arpil";
+        return 'Arpil';
       case 5:
-        return "May";
+        return 'May';
       case 6:
-        return "June";
+        return 'June';
       case 7:
-        return "July";
+        return 'July';
       case 8:
-        return "August";
+        return 'August';
       case 9:
-        return "September";
+        return 'September';
       case 10:
-        return "October";
+        return 'October';
       case 11:
-        return "November";
+        return 'November';
       case 12:
-        return "December";
+        return 'December';
       default:
-        return "NA";
+        return 'NA';
     }
   }
 }

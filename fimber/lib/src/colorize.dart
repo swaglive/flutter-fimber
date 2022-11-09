@@ -280,6 +280,6 @@ class Colorize {
   }
 
   static String _wrapAnsi(String text, String ansiCode) {
-    return "$_cmdCode${ansiCode}m$text$_resetCode";
+    return '$_cmdCode${ansiCode}m$text$_resetCode';
   }
 }

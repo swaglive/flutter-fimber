@@ -110,15 +110,13 @@ void main() async {
       await Future.delayed(Duration(milliseconds: waitForRightTime + 00))
           .then((i) {});
       print('Done waiting : ${DateTime.now()}');
-      final logTree = TimedRollingFileTree(
-        timeSpan: 2,
-        filenamePrefix: '$testDirName${dirSeparator}log_test_rolling_',
-      );
+      var logTree = TimedRollingFileTree(
+          duration: Duration(seconds: 2),
+          directory: testDirName,
+          filenamePrefix: 'log_test_rolling_');
       Fimber.plantTree(logTree);
       Fimber.i('First log entry');
       Fimber.i('First log entry #2');
-
-      final firstFile = logTree.outputFileName;
 
       // still same file
       await Future.delayed(const Duration(milliseconds: 1200)).then((i) {
@@ -136,7 +134,8 @@ void main() async {
 
       await Future.delayed(const Duration(milliseconds: 100));
 
-      final secondFile = logTree.outputFileName;
+      final firstFile = logTree.logFileFromId(logTree.fileIdList[0]);
+      var secondFile = logTree.logFileFromId(logTree.fileIdList[1]);
 
       await Future.delayed(const Duration(milliseconds: 100));
       // wait until buffer dumps to file
@@ -185,9 +184,10 @@ void main() async {
     });
 
     test('No old file detection test', () async {
-      final logTree = SizeRollingFileTree(
-        DataSize.bytes(20),
-        filenamePrefix: '$testDirName${dirSeparator}empty${dirSeparator}log_',
+      var logTree = SizeRollingFileTree(
+        maxDataSize: DataSize.bytes(20),
+        directory: testDirName,
+        filenamePrefix: 'empty${dirSeparator}log_',
       );
 
       final logFile = logTree.outputFileName;
@@ -210,9 +210,10 @@ void main() async {
 
     test('Old file detection test', () async {
       // roll file every 20 bytes (in reality every log line)
-      final logTree = SizeRollingFileTree(
-        DataSize.bytes(20),
-        filenamePrefix: '$testDirName${dirSeparator}log_',
+      var logTree = SizeRollingFileTree(
+        maxDataSize: DataSize.bytes(20),
+        directory: testDirName,
+        filenamePrefix: 'log_',
       );
       // detection tests - todo fix
       expect(logTree.isLogFile('$testDirName${dirSeparator}log_1.txt'), true);
@@ -229,26 +230,29 @@ void main() async {
       Fimber.i('Log single line - A');
       await waitForAppendBuffer();
 
-      await Future.delayed(const Duration(milliseconds: 200));
-      final logFile1 = logTree.outputFileName;
+      await Future.delayed(Duration(milliseconds: 200));
+      var logFile1 = logTree.logFileFromId(logTree.fileIdList[0]);
 
       print(logFile1);
-      expect(logFile1, '$testDirName${dirSeparator}log_1.txt');
+      expect(logFile1,
+          '$testDirName${dirSeparator}log_${logTree.fileIdList[0]}.txt');
       Fimber.i('Log single line - B');
       await waitForAppendBuffer();
-      await Future.delayed(const Duration(milliseconds: 200));
-      final logFile2 = logTree.outputFileName;
+      await Future.delayed(Duration(milliseconds: 200));
+      var logFile2 = logTree.logFileFromId(logTree.fileIdList[1]);
 
       print(logFile2);
-      expect(logFile2, '$testDirName${dirSeparator}log_2.txt');
+      expect(logFile2,
+          '$testDirName${dirSeparator}log_${logTree.fileIdList[1]}.txt');
 
       await Future.delayed(const Duration(milliseconds: 200));
       Fimber.i('Log single line - C with some chars');
       await waitForAppendBuffer();
 
-      final logFile3 = logTree.outputFileName;
+      var logFile3 = logTree.logFileFromId(logTree.fileIdList[2]);
       print(logFile3);
-      expect(logFile3, '$testDirName${dirSeparator}log_3.txt');
+      expect(logFile3,
+          '$testDirName${dirSeparator}log_${logTree.fileIdList[2]}.txt');
 
       Fimber.i('add some new');
       await Future.delayed(const Duration(milliseconds: 200));
@@ -260,9 +264,10 @@ void main() async {
 
     test('File size rolling test', () async {
       // roll file every 20 bytes (in reality every log line)
-      final logTree = SizeRollingFileTree(
-        DataSize.bytes(20),
-        filenamePrefix: '$testDirName$dirSeparator',
+      var logTree = SizeRollingFileTree(
+        maxDataSize: DataSize.bytes(20),
+        directory: testDirName,
+        filenamePrefix: '',
       );
 
       //logTree.detectFileIndex();
@@ -274,12 +279,12 @@ void main() async {
       // wait until buffer dumps to file
       await waitForAppendBuffer();
 
-      final firstFile = logTree.outputFileName;
       Fimber.i('Test log for second file');
       // wait until buffer dumps to file
       await waitForAppendBuffer();
 
-      final secondFile = logTree.outputFileName;
+      final firstFile = logTree.logFileFromId(logTree.fileIdList[0]);
+      final secondFile = logTree.logFileFromId(logTree.fileIdList[1]);
 
       assert(firstFile != secondFile);
       print(firstFile);
@@ -317,10 +322,11 @@ void main() async {
     test('File Tree - Rolling time append test', () async {
       final logLevels = CustomFormatTree.defaultLevels.toList();
       logLevels.remove('D');
-      final tree = TimedRollingFileTree(
-        filenamePrefix: '$testDirName${dirSeparator}mul_tree_time_append',
-        logLevels: logLevels,
-      );
+      var tree = TimedRollingFileTree(
+          duration: Duration(hours: 1),
+          directory: testDirName,
+          filenamePrefix: 'mul_tree_time_append',
+          logLevels: logLevels);
       // todo test file name generation
       Fimber.plantTree(tree);
       await Future.delayed(const Duration(milliseconds: 100));
@@ -348,6 +354,5 @@ void main() async {
 /// Waits for append buffer method.
 Future waitForAppendBuffer() async {
   await Future.delayed(
-    const Duration(milliseconds: FimberFileTree.fileBufferFlushInterval),
-  );
+      Duration(milliseconds: FileTree.defaultBufferFlushInterval));
 }
