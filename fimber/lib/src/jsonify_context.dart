@@ -13,7 +13,7 @@ Map<String, dynamic> _jsonifyMap(Map<String, dynamic> context) {
 }
 
 MapEntry<String, dynamic> _jsonifyEntry(MapEntry<String, dynamic> entry) {
-  if (entry.value is num || entry.value is String) {
+  if (entry.value == null || entry.value is num || entry.value is String) {
     return entry;
   } else if (entry.value is Map<String, dynamic>) {
     return MapEntry(entry.key, _jsonifyMap(entry.value));
@@ -25,6 +25,9 @@ MapEntry<String, dynamic> _jsonifyEntry(MapEntry<String, dynamic> entry) {
 }
 
 dynamic _jsonifyEntryValue(dynamic value) {
+  if (value == null) {
+    return null;
+  }
   if (value is num || value is String) {
     return value;
   } else if (value is Map<String, dynamic>) {
