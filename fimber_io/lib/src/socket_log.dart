@@ -100,10 +100,12 @@ class NetworkLoggingTree extends CustomFormatTree implements UnPlantableTree {
       }
     } else {
       if (_socketUdp != null) {
-        var bytesToSend = utf8.encoder.convert(line).toList();
+        final List<int> bytesToSend = utf8.encoder.convert(line).toList();
+        // ignore: avoid_print
         print('UDP socket available - will send: ${bytesToSend.length}');
         _socketUdp?.send(bytesToSend, InternetAddress(_server), _port);
       } else {
+        // ignore: avoid_print
         print('No socket available - will wait for one with this message.');
 
         /// TODO make a small cache locally before socket is available
