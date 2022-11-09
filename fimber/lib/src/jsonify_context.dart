@@ -8,12 +8,18 @@ Map<String, dynamic> jsonifyContext(Map<String, dynamic> context) {
 
 Map<String, dynamic> _jsonifyMap(Map<String, dynamic> context) {
   final Map<String, dynamic> json = {};
-  json.addEntries(context.entries.map(_jsonifyEntry).toList());
+  json.addEntries(context.entries
+      .map(_jsonifyEntry)
+      .whereType<MapEntry<String, dynamic>>()
+      .toList());
   return json;
 }
 
-MapEntry<String, dynamic> _jsonifyEntry(MapEntry<String, dynamic> entry) {
-  if (entry.value == null || entry.value is num || entry.value is String) {
+MapEntry<String, dynamic>? _jsonifyEntry(MapEntry<String, dynamic> entry) {
+  if (entry.value == null) {
+    return null;
+  }
+  if (entry.value is num || entry.value is String) {
     return entry;
   } else if (entry.value is Map<String, dynamic>) {
     return MapEntry(entry.key, _jsonifyMap(entry.value));
