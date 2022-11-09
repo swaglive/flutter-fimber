@@ -281,7 +281,9 @@ class DebugTree extends LogTree {
     String logTag = tag ?? LogTree.getTag();
     final StringBuffer logLineBuilder =
         StringBuffer("$level [$logTag]\t$message");
-
+    if (context != null) {
+      logLineBuilder.write("\tcontext: ${jsonEncode(context)}");
+    }
     if (ex != null) {
       logLineBuilder.write("\n${ex.toString()}");
     }
