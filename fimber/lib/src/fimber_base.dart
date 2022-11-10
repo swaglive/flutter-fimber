@@ -5,10 +5,13 @@ import 'package:fimber/src/jsonify_context.dart';
 
 import 'colorize.dart';
 
+typedef GlobalContextProvider = Map<String, dynamic>? Function();
+
 // ignore: avoid_classes_with_only_static_members
 /// Main static Fimber logging.
 class Fimber {
   static final List<String> _muteLevels = [];
+  static GlobalContextProvider? globalContextProvider;
 
   /// Logs VERBOSE level [message]
   /// with optional exception and stacktrace
@@ -134,9 +137,20 @@ class Fimber {
     if (context != null && loggersForTree?.isNotEmpty == true) {
       context = jsonifyContext(context);
     }
+    Map<String, dynamic>? globalContext = globalContextProvider?.call();
+    if (globalContext != null) {
+      globalContext = jsonifyContext(globalContext);
+    }
     for (final logger in loggersForTree ?? <LogTree>[]) {
-      logger.log(level, message,
-          tag: tag, ex: ex, stacktrace: stacktrace, context: context);
+      logger.log(
+        level,
+        message,
+        tag: tag,
+        ex: ex,
+        stacktrace: stacktrace,
+        context: context,
+        globalContext: globalContext,
+      );
     }
   }
 
@@ -278,6 +292,7 @@ class DebugTree extends LogTree {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Map<String, dynamic>? globalContext,
   }) {
     final logTag = tag ?? LogTree.getTag();
     final StringBuffer logLineBuilder =
@@ -371,6 +386,7 @@ abstract class LogTree {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Map<String, dynamic>? globalContext,
   });
 
   /// Gets levels of logging serviced by this [LogTree]
@@ -670,6 +686,7 @@ class CustomFormatTree extends LogTree {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Map<String, dynamic>? globalContext,
   }) {
     final LogLineInfo logLineInfo = LogTree.getLogLineInfo();
     _printFormattedLog(
