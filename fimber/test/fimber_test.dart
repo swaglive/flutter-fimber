@@ -357,6 +357,24 @@ void main() {
       Fimber.e("error logging");
     });
   });
+
+  group("Global context provider", () {
+    test("GlobalContextProvider is called when logging", () {
+      int called = 0;
+      Fimber.globalContextProvider = () {
+        called += 1;
+        return null;
+      };
+
+      Fimber.v("verbose logging");
+      Fimber.d("debug logging");
+      Fimber.i("info logging");
+      Fimber.w("warning logging");
+      Fimber.e("error logging");
+
+      expect(called, 5);
+    });
+  });
 }
 
 class TestClass {
@@ -403,11 +421,15 @@ class AssertTree extends LogTree {
   }
 
   @override
-  void log(String level, String msg,
-      {String? tag,
-      dynamic ex,
-      StackTrace? stacktrace,
-      Map<String, dynamic>? context}) {
+  void log(
+    String level,
+    String msg, {
+    String? tag,
+    dynamic ex,
+    StackTrace? stacktrace,
+    Map<String, dynamic>? context,
+    Map<String, dynamic>? globalContext,
+  }) {
     tag = (tag ?? LogTree.getTag());
     var newLogLine =
         "$level:$tag\t$msg\t$ex\n${stacktrace?.toString().split('\n') ?? ""}";
