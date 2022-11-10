@@ -1,4 +1,8 @@
 // ignore: avoid_classes_with_only_static_members
+import 'dart:convert';
+
+import 'package:fimber/src/jsonify_context.dart';
+
 import 'colorize.dart';
 
 // ignore: avoid_classes_with_only_static_members
@@ -13,8 +17,16 @@ class Fimber {
     String? tag,
     dynamic ex,
     StackTrace? stacktrace,
+    Map<String, dynamic>? context,
   }) {
-    log("V", message, tag: tag, ex: ex, stacktrace: stacktrace);
+    log(
+      "V",
+      message,
+      tag: tag,
+      ex: ex,
+      stacktrace: stacktrace,
+      context: context,
+    );
   }
 
   /// Logs DEBUG level [message]
@@ -24,8 +36,16 @@ class Fimber {
     String? tag,
     dynamic ex,
     StackTrace? stacktrace,
+    Map<String, dynamic>? context,
   }) {
-    log("D", message, tag: tag, ex: ex, stacktrace: stacktrace);
+    log(
+      "D",
+      message,
+      tag: tag,
+      ex: ex,
+      stacktrace: stacktrace,
+      context: context,
+    );
   }
 
   /// Logs INFO level [message]
@@ -35,8 +55,16 @@ class Fimber {
     String? tag,
     dynamic ex,
     StackTrace? stacktrace,
+    Map<String, dynamic>? context,
   }) {
-    log("I", message, tag: tag, ex: ex, stacktrace: stacktrace);
+    log(
+      "I",
+      message,
+      tag: tag,
+      ex: ex,
+      stacktrace: stacktrace,
+      context: context,
+    );
   }
 
   /// Logs WARNING level [message]
@@ -46,8 +74,16 @@ class Fimber {
     String? tag,
     dynamic ex,
     StackTrace? stacktrace,
+    Map<String, dynamic>? context,
   }) {
-    log("W", message, tag: tag, ex: ex, stacktrace: stacktrace);
+    log(
+      "W",
+      message,
+      tag: tag,
+      ex: ex,
+      stacktrace: stacktrace,
+      context: context,
+    );
   }
 
   /// Logs ERROR level [message]
@@ -57,8 +93,16 @@ class Fimber {
     String? tag,
     dynamic ex,
     StackTrace? stacktrace,
+    Map<String, dynamic>? context,
   }) {
-    log("E", message, tag: tag, ex: ex, stacktrace: stacktrace);
+    log(
+      "E",
+      message,
+      tag: tag,
+      ex: ex,
+      stacktrace: stacktrace,
+      context: context,
+    );
   }
 
   /// Mute a log [level] for logging.
@@ -75,14 +119,24 @@ class Fimber {
 
   /// Logs a [message] with provided [level]
   /// and optional [tag], [ex] and [stacktrace]
-  static void log(String level, String message,
-      {String? tag, dynamic ex, StackTrace? stacktrace}) {
+  static void log(
+    String level,
+    String message, {
+    String? tag,
+    dynamic ex,
+    StackTrace? stacktrace,
+    Map<String, dynamic>? context,
+  }) {
     if (_muteLevels.contains(level)) {
       return; // skip logging if muted.
     }
     final loggersForTree = _trees[level];
+    if (context != null && loggersForTree?.isNotEmpty == true) {
+      context = jsonifyContext(context);
+    }
     for (final logger in loggersForTree ?? <LogTree>[]) {
-      logger.log(level, message, tag: tag, ex: ex, stacktrace: stacktrace);
+      logger.log(level, message,
+          tag: tag, ex: ex, stacktrace: stacktrace, context: context);
     }
   }
 
@@ -223,11 +277,14 @@ class DebugTree extends LogTree {
     String? tag,
     dynamic ex,
     StackTrace? stacktrace,
+    Map<String, dynamic>? context,
   }) {
     final logTag = tag ?? LogTree.getTag();
     final StringBuffer logLineBuilder =
         StringBuffer("$level [$logTag]\t$message");
-
+    if (context != null) {
+      logLineBuilder.write("\tcontext: ${jsonEncode(context)}");
+    }
     if (ex != null) {
       logLineBuilder.write("\n$ex");
     }
@@ -313,6 +370,7 @@ abstract class LogTree {
     String? tag,
     dynamic ex,
     StackTrace? stacktrace,
+    Map<String, dynamic>? context,
   });
 
   /// Gets levels of logging serviced by this [LogTree]
@@ -408,32 +466,57 @@ class FimberLog {
 
   /// Logs VERBOSE level [message]
   /// with optional exception and stacktrace
-  void v(String message, {dynamic ex, StackTrace? stacktrace}) {
-    _log("V", tag, message, ex: ex, stacktrace: stacktrace);
+  void v(
+    String message, {
+    dynamic ex,
+    StackTrace? stacktrace,
+    Map<String, dynamic>? context,
+  }) {
+    _log("V", tag, message, ex: ex, stacktrace: stacktrace, context: context);
   }
 
   /// Logs DEBUG level [message]
   /// with optional exception and stacktrace
-  void d(String message, {dynamic ex, StackTrace? stacktrace}) {
-    _log("D", tag, message, ex: ex, stacktrace: stacktrace);
+  void d(
+    String message, {
+    dynamic ex,
+    StackTrace? stacktrace,
+    Map<String, dynamic>? context,
+  }) {
+    _log("D", tag, message, ex: ex, stacktrace: stacktrace, context: context);
   }
 
   /// Logs INFO level [message]
   /// with optional exception and stacktrace
-  void i(String message, {dynamic ex, StackTrace? stacktrace}) {
-    _log("I", tag, message, ex: ex, stacktrace: stacktrace);
+  void i(
+    String message, {
+    dynamic ex,
+    StackTrace? stacktrace,
+    Map<String, dynamic>? context,
+  }) {
+    _log("I", tag, message, ex: ex, stacktrace: stacktrace, context: context);
   }
 
   /// Logs WARNING level [message]
   /// with optional exception and stacktrace
-  void w(String message, {dynamic ex, StackTrace? stacktrace}) {
-    _log("W", tag, message, ex: ex, stacktrace: stacktrace);
+  void w(
+    String message, {
+    dynamic ex,
+    StackTrace? stacktrace,
+    Map<String, dynamic>? context,
+  }) {
+    _log("W", tag, message, ex: ex, stacktrace: stacktrace, context: context);
   }
 
   /// Logs ERROR level [message]
   /// with optional exception and stacktrace
-  void e(String message, {dynamic ex, StackTrace? stacktrace}) {
-    _log("E", tag, message, ex: ex, stacktrace: stacktrace);
+  void e(
+    String message, {
+    dynamic ex,
+    StackTrace? stacktrace,
+    Map<String, dynamic>? context,
+  }) {
+    _log("E", tag, message, ex: ex, stacktrace: stacktrace, context: context);
   }
 
   /// Logs [message] with [tag] and [level]
@@ -444,8 +527,16 @@ class FimberLog {
     String message, {
     dynamic ex,
     StackTrace? stacktrace,
+    Map<String, dynamic>? context,
   }) {
-    Fimber.log(level, message, tag: tag, ex: ex, stacktrace: stacktrace);
+    Fimber.log(
+      level,
+      message,
+      tag: tag,
+      ex: ex,
+      stacktrace: stacktrace,
+      context: context,
+    );
   }
 }
 
@@ -578,10 +669,18 @@ class CustomFormatTree extends LogTree {
     String? tag,
     dynamic ex,
     StackTrace? stacktrace,
+    Map<String, dynamic>? context,
   }) {
     final LogLineInfo logLineInfo = LogTree.getLogLineInfo();
     _printFormattedLog(
-        level, msg, tag ?? LogTree.getTag(), logLineInfo, ex, stacktrace);
+      level,
+      msg,
+      tag ?? LogTree.getTag(),
+      logLineInfo,
+      ex,
+      stacktrace,
+      context,
+    );
   }
 
   /// Prints log line with optional log level.
@@ -603,6 +702,7 @@ class CustomFormatTree extends LogTree {
     LogLineInfo logLineInfo,
     dynamic ex,
     StackTrace? stacktrace,
+    Map<String, dynamic>? context,
   ) {
     if (ex != null) {
       final tmpStacktrace =
@@ -617,12 +717,13 @@ class CustomFormatTree extends LogTree {
           logLineInfo,
           "\n$ex",
           "\n$stackTraceMessage",
+          context,
         ),
         level: level,
       );
     } else {
       printLine(
-        _formatLine(logFormat, level, msg, logLineInfo, "", ""),
+        _formatLine(logFormat, level, msg, tag, logLineInfo, "", "", context),
         level: level,
       );
     }
@@ -636,6 +737,7 @@ class CustomFormatTree extends LogTree {
     LogLineInfo logLineInfo,
     String exMsg,
     String stacktrace,
+    Map<String, dynamic>? context,
   ) {
     final date = DateTime.now().toIso8601String();
     final elapsed = _elapsedTimeStopwatch?.elapsed.toString() ?? '';
@@ -674,6 +776,9 @@ class CustomFormatTree extends LogTree {
         charAtIndexToken,
         logLineInfo.characterIndex.toString(),
       );
+    }
+    if (context != null && context.isNotEmpty) {
+      logLine = logLine + ' ${jsonEncode(context)}';
     }
     return logLine;
   }

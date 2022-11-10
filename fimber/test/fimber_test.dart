@@ -410,13 +410,11 @@ class AssertTree extends LogTree {
   }
 
   @override
-  void log(
-    String level,
-    String msg, {
-    String? tag,
-    dynamic? ex,
-    StackTrace? stacktrace,
-  }) {
+  void log(String level, String msg,
+      {String? tag,
+      dynamic ex,
+      StackTrace? stacktrace,
+      Map<String, dynamic>? context}) {
     tag = (tag ?? LogTree.getTag());
     final newLogLine =
         "$level:$tag\t$msg\t$ex\n${stacktrace?.toString().split('\n') ?? ""}";
