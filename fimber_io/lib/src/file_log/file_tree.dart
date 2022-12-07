@@ -3,6 +3,7 @@ import 'dart:core';
 import 'dart:io';
 
 import 'package:fimber/fimber.dart';
+import 'package:fimber_io/src/file_log/log_error.dart';
 import 'package:synchronized/extension.dart';
 
 abstract class FileSizeListener {
@@ -31,6 +32,9 @@ abstract class FileTree extends CustomFormatTree
   int _bufferSize = 0;
   List<String> _buffers = [];
   StreamSubscription<List<String>>? _flushTimer;
+  final _errorStreamController = StreamController<LogError>.broadcast();
+  Stream<LogError> get onError => _errorStreamController.stream;
+  final String _tag = 'FileTree';
 
   /// Creates Instance of FimberFileTree
   /// with optional [logFormat] from [CustomFormatTree] predicates.
@@ -55,6 +59,13 @@ abstract class FileTree extends CustomFormatTree
     });
   }
 
+  void addError(LogError error) {
+    if (_errorStreamController.isClosed) {
+      return;
+    }
+    _errorStreamController.add(error);
+  }
+
   void _checkSizeForFlush() {
     if (_bufferSize > maxBufferSize) {
       final dumpBuffer = _buffers;
@@ -70,24 +81,62 @@ abstract class FileTree extends CustomFormatTree
         if (buffer.isNotEmpty) {
           IOSink? logSink;
           final file = File(outputFileName);
+          final context = {'step': 'init'};
           try {
             // check if file's directory exists
             final parentDir = file.parent;
             if (!parentDir.existsSync()) {
+              context['step'] = 'create file';
               parentDir.createSync(recursive: true);
             }
+            context['step'] = 'open file';
             logSink = file.openWrite(mode: FileMode.writeOnlyAppend);
+            context['step'] = 'write lines';
             for (final String newLine in buffer) {
               logSink.writeln(newLine);
             }
+            context['step'] = 'flush file';
             await logSink.flush();
+          } catch (e, s) {
+            addError(
+              LogError(
+                message: 'Cannot flush buffer',
+                tag: _tag,
+                error: e,
+                stackTrace: s,
+                context: context,
+              ),
+            );
           } finally {
             await logSink?.close();
           }
           try {
+            context['step'] = 'read length';
             final fileSize = file.lengthSync();
+            context['step'] = 'notify listeners';
             onBufferFlushed(file.path, fileSize);
-          } on FileSystemException catch (_) {}
+          } on FileSystemException catch (e, s) {
+            addError(
+              LogError(
+                message: 'Cannot report flush',
+                tag: _tag,
+                error: e,
+                stackTrace: s,
+                context: {...context, 'reason': 'file system error'},
+              ),
+            );
+          } catch (e, s) {
+            addError(
+              LogError(
+                message: 'Cannot report flush',
+                tag: _tag,
+                error: e,
+                stackTrace: s,
+                context: {...context, 'reason': 'unknown'},
+              ),
+            );
+            rethrow;
+          }
         }
       });
 
@@ -108,5 +157,6 @@ abstract class FileTree extends CustomFormatTree
   void close() {
     _flushTimer?.cancel();
     _flushTimer = null;
+    _errorStreamController.close();
   }
 }

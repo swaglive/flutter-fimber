@@ -1,12 +1,14 @@
 import 'dart:io';
 
 import 'package:fimber/fimber.dart';
+import 'package:fimber_io/src/file_log/log_error.dart';
 
 import '../file_tree.dart';
 import 'rolling_file_tree.dart';
 
 class SizeRollingFileTree extends RollingFileTree {
   final DataSize maxDataSize;
+  final String _tag = 'SizeRollingFileTree';
 
   SizeRollingFileTree({
     required this.maxDataSize,
@@ -55,8 +57,21 @@ class SizeRollingFileTree extends RollingFileTree {
     currentFileId = getCurrentIndex();
     outputFileName = currentFile();
     final outputFile = File(outputFileName);
-    if (outputFile.existsSync()) {
-      outputFile.deleteSync();
+    try {
+      if (outputFile.existsSync()) {
+        outputFile.deleteSync();
+      }
+    } catch (e, s) {
+      addError(
+        LogError(
+          message: 'Cannot delete dup file',
+          error: e,
+          stackTrace: s,
+          tag: _tag,
+          context: {'filePath': outputFile.path},
+        ),
+      );
+      rethrow;
     }
     fileIdList.add(currentFileId);
 
@@ -66,10 +81,24 @@ class SizeRollingFileTree extends RollingFileTree {
     if (deleteCount > 0) {
       for (int i = 0; i < deleteCount; i++) {
         final file = File(logFileFromId(indexes[i]));
-        if (file.existsSync()) {
-          file.deleteSync();
+        try {
+          if (file.existsSync()) {
+            file.deleteSync();
+          }
+          //Note: after deletion, elements shift right
+          fileIdList.removeAt(0);
+        } catch (e, s) {
+          addError(
+            LogError(
+              message: 'Cannot delete old file',
+              error: e,
+              stackTrace: s,
+              tag: _tag,
+              context: {'filePath': file.path},
+            ),
+          );
+          rethrow;
         }
-        fileIdList.removeAt(i);
       }
     }
   }

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:fimber/fimber.dart';
+import 'package:fimber_io/src/file_log/log_error.dart';
 import 'package:intl/intl.dart';
 
 import '../file_tree.dart';
@@ -15,6 +16,7 @@ abstract class RollingFileTree extends FileTree {
 
   List<int> fileIdList = [];
   int currentFileId = 0;
+  final String _tag = 'RollingFileTree';
 
   RollingFileTree({
     String logFormat = CustomFormatTree.defaultFormat,
@@ -41,28 +43,61 @@ abstract class RollingFileTree extends FileTree {
 
   void _detectFileIndex() {
     final Directory rootDir = Directory(directory);
-    if (!rootDir.existsSync()) {
-      /// no files created yet.
-      currentFileId = 0;
-      onInitDone(fileIdList);
-      // rollToNextFile();
+    try {
+      if (!rootDir.existsSync()) {
+        /// no files created yet.
+        currentFileId = 0;
+        onInitDone(fileIdList);
+        // rollToNextFile();
+        return;
+      }
+    } catch (e, s) {
+      addError(
+        LogError(
+          message: 'Cannot check log file existence',
+          error: e,
+          stackTrace: s,
+          tag: _tag,
+        ),
+      );
       return;
     }
-    fileIdList = rootDir
-        .listSync()
-        .map((fe) {
-          final int index = getLogIndex(fe.path);
-          if (index < 0) {
-            fe.delete();
-          }
-          return index;
-        })
-        .where((i) => i >= 0)
-        .toList();
-    fileIdList.sort();
-    // ignore: avoid_print
-    print('Fimber-IO: log list indexes: $fileIdList');
-    onInitDone(fileIdList);
+    try {
+      fileIdList = rootDir
+          .listSync()
+          .map((fe) {
+            final int index = getLogIndex(fe.path);
+            if (index < 0) {
+              fe.delete().catchError((e, s) {
+                addError(
+                  LogError(
+                    message: 'Cannot delete file',
+                    error: e,
+                    stackTrace: s,
+                    tag: _tag,
+                    context: {'path': fe.path},
+                  ),
+                );
+              });
+            }
+            return index;
+          })
+          .where((i) => i >= 0)
+          .toList();
+      fileIdList.sort();
+      // ignore: avoid_print
+      print('Fimber-IO: log list indexes: $fileIdList');
+      onInitDone(fileIdList);
+    } catch (e, s) {
+      addError(
+        LogError(
+          message: 'Cannot init fileIdList',
+          error: e,
+          stackTrace: s,
+          tag: _tag,
+        ),
+      );      
+    }
   }
 
   String currentFile() => logFileFromId(currentFileId);
@@ -87,10 +122,31 @@ abstract class RollingFileTree extends FileTree {
         if (match.groupCount > 0) {
           final parseGroup = match.group(0);
           if (parseGroup != null) {
+            final conext = {'filePath': filePath, 'parseGroup': parseGroup};
             try {
               return dateFormat.parse(parseGroup).millisecondsSinceEpoch;
-            } on FormatException catch (_) {
+            } on FormatException catch (e, s) {
+              addError(
+                LogError(
+                  message: 'Cannot parse ',
+                  error: e,
+                  stackTrace: s,
+                  tag: _tag,
+                  context: {...conext, 'reason': 'format error'},
+                ),
+              );
               return -1;
+            } catch (e, s) {
+              addError(
+                LogError(
+                  message: 'Cannot parse ',
+                  error: e,
+                  stackTrace: s,
+                  tag: _tag,
+                  context: {...conext, 'reason': 'unknown'},
+                ),
+              );
+              rethrow;
             }
           }
         }
