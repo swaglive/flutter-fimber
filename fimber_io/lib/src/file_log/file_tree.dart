@@ -134,8 +134,7 @@ abstract class FileTree extends CustomFormatTree
                 stackTrace: s,
                 context: {...context, 'reason': 'unknown'},
               ),
-            );
-            rethrow;
+            );            
           }
         }
       });

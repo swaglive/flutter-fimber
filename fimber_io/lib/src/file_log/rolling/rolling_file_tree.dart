@@ -145,8 +145,7 @@ abstract class RollingFileTree extends FileTree {
                   tag: _tag,
                   context: {...conext, 'reason': 'unknown'},
                 ),
-              );
-              rethrow;
+              );              
             }
           }
         }

@@ -71,7 +71,7 @@ class SizeRollingFileTree extends RollingFileTree {
           context: {'filePath': outputFile.path},
         ),
       );
-      rethrow;
+      return;
     }
     fileIdList.add(currentFileId);
 
@@ -97,7 +97,7 @@ class SizeRollingFileTree extends RollingFileTree {
               context: {'filePath': file.path},
             ),
           );
-          rethrow;
+          return;
         }
       }
     }
