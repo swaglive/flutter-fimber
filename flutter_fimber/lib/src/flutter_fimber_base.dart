@@ -40,8 +40,15 @@ class FimberTree extends LogTree {
   /// Logs [message] with log [level]
   /// and optional [tag], [ex] (exception) and [stacktrace]
   @override
-  void log(String level, String message,
-      {String? tag, dynamic ex, StackTrace? stacktrace}) {
+  void log(
+    String level,
+    String message, {
+    String? tag,
+    dynamic ex,
+    StackTrace? stacktrace,
+    Map<String, dynamic>? context,
+    Map<String, dynamic>? globalContext,
+  }) {
     var logTag = tag ?? LogTree.getTag();
     String? exDump;
     if (ex != null) {
