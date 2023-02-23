@@ -21,6 +21,7 @@ class Fimber {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Map<String, dynamic>? globalContext,
   }) {
     log(
       "V",
@@ -29,6 +30,7 @@ class Fimber {
       ex: ex,
       stacktrace: stacktrace,
       context: context,
+      extraGlobalContext: globalContext,
     );
   }
 
@@ -40,6 +42,7 @@ class Fimber {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Map<String, dynamic>? globalContext,
   }) {
     log(
       "D",
@@ -48,6 +51,7 @@ class Fimber {
       ex: ex,
       stacktrace: stacktrace,
       context: context,
+      extraGlobalContext: globalContext,
     );
   }
 
@@ -59,6 +63,7 @@ class Fimber {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Map<String, dynamic>? globalContext,
   }) {
     log(
       "I",
@@ -67,6 +72,7 @@ class Fimber {
       ex: ex,
       stacktrace: stacktrace,
       context: context,
+      extraGlobalContext: globalContext,
     );
   }
 
@@ -78,6 +84,7 @@ class Fimber {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Map<String, dynamic>? globalContext,
   }) {
     log(
       "W",
@@ -86,6 +93,7 @@ class Fimber {
       ex: ex,
       stacktrace: stacktrace,
       context: context,
+      extraGlobalContext: globalContext,
     );
   }
 
@@ -97,6 +105,7 @@ class Fimber {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Map<String, dynamic>? globalContext,
   }) {
     log(
       "E",
@@ -105,6 +114,7 @@ class Fimber {
       ex: ex,
       stacktrace: stacktrace,
       context: context,
+      extraGlobalContext: globalContext,
     );
   }
 
@@ -129,6 +139,7 @@ class Fimber {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Map<String, dynamic>? extraGlobalContext,
   }) {
     if (_muteLevels.contains(level)) {
       return; // skip logging if muted.
@@ -137,10 +148,19 @@ class Fimber {
     if (context != null && loggersForTree?.isNotEmpty == true) {
       context = jsonifyContext(context);
     }
-    Map<String, dynamic>? globalContext = globalContextProvider?.call();
-    if (globalContext != null) {
-      globalContext = jsonifyContext(globalContext);
+    Map<String, dynamic>? globalContext = globalContextProvider?.call() ?? {};
+    if (extraGlobalContext?.isNotEmpty == true) {
+      //extra overwrites globalContext if key is the same
+      globalContext.addAll(extraGlobalContext!);
     }
+
+    if (globalContext.isNotEmpty == true) {
+      globalContext = jsonifyContext(globalContext);
+    } else {
+      //if the result is empty, set attachingGlobalContext to null
+      globalContext = null;
+    }
+
     for (final LogTree logger in loggersForTree ?? []) {
       logger.log(
         level,
@@ -546,6 +566,7 @@ class FimberLog {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Map<String, dynamic>? globalContext,
   }) {
     Fimber.log(
       level,
@@ -554,6 +575,7 @@ class FimberLog {
       ex: ex,
       stacktrace: stacktrace,
       context: context,
+      extraGlobalContext: globalContext,
     );
   }
 }

@@ -13,7 +13,7 @@ dependencies:
     git:
       url: https://github.com/swaglive/flutter-fimber.git
       path: fimber
-      ref: 0.6.5-hotfix.9
+      ref: 0.6.5-hotfix.10
   flutter:
     sdk: flutter
 
