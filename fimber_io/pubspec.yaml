@@ -9,6 +9,8 @@ environment:
 
 dependencies:
   fimber: "^0.7.0"
+  synchronized: ^3.0.0+2
+  intl: ^0.17.0
 
 dev_dependencies:
   lint: ^2.0.0
