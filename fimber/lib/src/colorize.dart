@@ -83,7 +83,7 @@ class AnsiStyle {
     if (bit9Pallete != null && color == AnsiColor.bits) {
       return "8;5;$bit9Pallete";
     } else {
-      return (color?.index.toString()) ?? "";
+      return color?.index.toString() ?? "";
     }
   }
 
@@ -228,7 +228,7 @@ class Colorize {
     if (reverse ?? false) {
       // if reverse and background/foreground are specified we should reverse their colors
       if (background != null || foreground != null || bright != null) {
-        AnsiColor? tmp = background;
+        final AnsiColor? tmp = background;
         background = foreground ?? bright;
         foreground = tmp;
       } else {

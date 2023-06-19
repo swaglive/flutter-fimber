@@ -189,8 +189,8 @@ void main() {
         {'key': null}
       ]
     };
-    final output = jsonifyContext(input);    
-    expect(output.containsKey('key'), false);    
+    final output = jsonifyContext(input);
+    expect(output.containsKey('key'), false);
     expect(output['map'] is Map && !(output['map'] as Map).containsKey('key'),
         true);
     expect(output['map']['list'][0], null);
