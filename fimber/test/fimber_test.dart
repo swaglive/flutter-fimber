@@ -338,22 +338,11 @@ void main() {
           "${CustomFormatTree.tagToken}\t${CustomFormatTree.fileNameToken}\t- ${CustomFormatTree.filePathToken} : ${CustomFormatTree.lineNumberToken}");
       Fimber.plantTree(formatTree);
       Fimber.i("Test message");
-      final testLine = formatTree.allLines.first;
-      expect(
-        testLine.startsWith('main.<ac>.<ac>\tfimber_test.dart\t- //Users'),
-        true,
-      );
-      /**
-       NOTE: 
-       1. This line tests `Fimber.i("Test message");`, which is sensitive to the actual location of that line.
-          When encounter failure, check the line number first.
-       2. The path should be agnostic to project folder name and computer user name. 
-          If the 1. check passes but still having error, check if the path of this file shoulb be updated.
-       */
-      expect(
-        testLine.endsWith('/fimber/test/fimber_test.dart : 340'),
-        true,
-      );
+      assert(formatTree.allLines.first
+          .startsWith('main.<ac>.<ac>\tfimber_test.dart\t'));
+      assert(formatTree.allLines.first
+          .endsWith('flutter-fimber/fimber/test/fimber_test.dart : 340'));
+
       Fimber.unplantTree(formatTree);
     });
   });
