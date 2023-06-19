@@ -1,1 +1,8 @@
-include: package:flutter_lints/flutter.yaml
+# include: package:lint/strict.yaml # For production apps
+# include: package:lint/casual.yaml # For code samples, hackathons and other non-production code
+include: package:lint/package.yaml # Use this for packages with public API
+
+linter:
+  rules:
+    always_use_package_imports: false
+    prefer_relative_imports: true
