@@ -1,9 +1,7 @@
-// ignore: avoid_classes_with_only_static_members
 import 'dart:convert';
 
-import 'package:fimber/src/jsonify_context.dart';
-
 import 'colorize.dart';
+import 'jsonify_context.dart';
 
 typedef GlobalContextProvider = Map<String, dynamic>? Function();
 
@@ -489,8 +487,10 @@ abstract class LogTree {
     }
   }
 
-  static List<String> getStacktraceList(StackTrace stackTrace,
-      {int maxStackIndex = 6}) {
+  static List<String> getStacktraceList(
+    StackTrace stackTrace, {
+    int maxStackIndex = 6,
+  }) {
     final List<String> stackTraceList = stackTrace.toString().split('\n');
     if (stackTraceList.isEmpty) return [];
     return stackTraceList.sublist(
@@ -904,7 +904,7 @@ class CustomFormatTree extends LogTree {
       );
     }
     if (context != null && context.isNotEmpty) {
-      logLine = logLine + ' ${jsonEncode(context)}';
+      logLine = '$logLine ${jsonEncode(context)}';
     }
     return logLine;
   }

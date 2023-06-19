@@ -70,10 +70,10 @@ class TimedRollingFileTree extends RollingFileTree {
 
     /// remove old log file.
     final int deleteCount = fileIdList.length - maxAmountOfFile;
-    final indexes = List.from(fileIdList);
+    final List<int> indexes = List.from(fileIdList);
     if (deleteCount > 0) {
       for (int i = 0; i < deleteCount; i++) {
-        final file = File(logFile(indexes[i]));
+        final file = File(logFile('${indexes[i]}'));
         if (file.existsSync()) {
           file.deleteSync();
         }

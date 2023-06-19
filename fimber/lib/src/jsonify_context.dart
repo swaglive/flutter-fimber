@@ -19,15 +19,18 @@ MapEntry<String, dynamic>? _jsonifyEntry(MapEntry<String, dynamic> entry) {
   if (entry.value == null) {
     return null;
   }
-  if (entry.value is num || entry.value is String) {
+
+  final String key = entry.key;
+  final dynamic value = entry.value;
+  if (value is num || value is String) {
     return entry;
-  } else if (entry.value is Map<String, dynamic>) {
-    return MapEntry(entry.key, _jsonifyMap(entry.value));
-  } else if (entry.value is List<dynamic>) {
-    final List<dynamic> list = entry.value;
-    return MapEntry(entry.key, list.map(_jsonifyEntryValue).toList());
+  } else if (value is Map<String, dynamic>) {
+    return MapEntry(key, _jsonifyMap(value));
+  } else if (value is List<dynamic>) {
+    final List<dynamic> list = value;
+    return MapEntry(key, list.map(_jsonifyEntryValue).toList());
   }
-  return MapEntry(entry.key, entry.value.toString());
+  return MapEntry(key, value.toString());
 }
 
 dynamic _jsonifyEntryValue(dynamic value) {
