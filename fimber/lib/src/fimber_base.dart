@@ -318,13 +318,16 @@ class DebugTree extends LogTree {
   /// Logs [message] with [level]
   /// and optional [tag], [ex] (exception, [stacktrace]
   @override
-  void log(String level, String message,
-      {String? tag,
-      dynamic ex,
-      StackTrace? stacktrace,
-      Map<String, dynamic>? context,
-      Map<String, dynamic>? globalContext,
-      required Set<String> labels}) {
+  void log(
+    String level,
+    String message, {
+    String? tag,
+    dynamic ex,
+    StackTrace? stacktrace,
+    Map<String, dynamic>? context,
+    Map<String, dynamic>? globalContext,
+    required Set<String> labels,
+  }) {
     String logTag = tag ?? LogTree.getTag();
     final StringBuffer logLineBuilder =
         StringBuffer("$level [$logTag]\t$message");
