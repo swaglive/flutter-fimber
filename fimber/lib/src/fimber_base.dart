@@ -22,6 +22,7 @@ class Fimber {
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
     Map<String, dynamic>? globalContext,
+    Set<String> labels = const {},
   }) {
     log(
       "V",
@@ -31,6 +32,7 @@ class Fimber {
       stacktrace: stacktrace,
       context: context,
       extraGlobalContext: globalContext,
+      labels: labels,
     );
   }
 
@@ -43,6 +45,7 @@ class Fimber {
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
     Map<String, dynamic>? globalContext,
+    Set<String> labels = const {},
   }) {
     log(
       "D",
@@ -52,6 +55,7 @@ class Fimber {
       stacktrace: stacktrace,
       context: context,
       extraGlobalContext: globalContext,
+      labels: labels,
     );
   }
 
@@ -64,6 +68,7 @@ class Fimber {
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
     Map<String, dynamic>? globalContext,
+    Set<String> labels = const {},
   }) {
     log(
       "I",
@@ -73,6 +78,7 @@ class Fimber {
       stacktrace: stacktrace,
       context: context,
       extraGlobalContext: globalContext,
+      labels: labels,
     );
   }
 
@@ -85,6 +91,7 @@ class Fimber {
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
     Map<String, dynamic>? globalContext,
+    Set<String> labels = const {},
   }) {
     log(
       "W",
@@ -94,6 +101,7 @@ class Fimber {
       stacktrace: stacktrace,
       context: context,
       extraGlobalContext: globalContext,
+      labels: labels,
     );
   }
 
@@ -106,6 +114,7 @@ class Fimber {
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
     Map<String, dynamic>? globalContext,
+    Set<String> labels = const {},
   }) {
     log(
       "E",
@@ -115,6 +124,7 @@ class Fimber {
       stacktrace: stacktrace,
       context: context,
       extraGlobalContext: globalContext,
+      labels: labels,
     );
   }
 
@@ -140,6 +150,7 @@ class Fimber {
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
     Map<String, dynamic>? extraGlobalContext,
+    required Set<String> labels,
   }) {
     if (_muteLevels.contains(level)) {
       return; // skip logging if muted.
@@ -160,6 +171,9 @@ class Fimber {
       //if the result is empty, set attachingGlobalContext to null
       globalContext = null;
     }
+    final Set<String> mergedLabels =
+        tag != null ? labels.union({tag}) : Set.from(labels);
+
     for (final logger in loggersForTree ?? <LogTree>[]) {
       logger.log(
         level,
@@ -169,6 +183,7 @@ class Fimber {
         stacktrace: stacktrace,
         context: context,
         globalContext: globalContext,
+        labels: mergedLabels,
       );
     }
   }
@@ -312,6 +327,7 @@ class DebugTree extends LogTree {
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
     Map<String, dynamic>? globalContext,
+    required Set<String> labels,
   }) {
     final logTag = tag ?? LogTree.getTag();
     final StringBuffer logLineBuilder =
@@ -406,6 +422,7 @@ abstract class LogTree {
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
     Map<String, dynamic>? globalContext,
+    required Set<String> labels,
   });
 
   /// Gets levels of logging serviced by this [LogTree]
@@ -495,9 +512,11 @@ abstract class LogTree {
 class FimberLog {
   /// Log [tag] used in formatted message.
   String tag;
+  final Set<String> labels;
 
   /// Creates instance of [FimberLog] for a ]tag].
-  FimberLog(this.tag);
+  FimberLog(this.tag, {Set<String> labels = const {}})
+      : labels = Set.from(labels);
 
   /// Logs VERBOSE level [message]
   /// with optional exception and stacktrace
@@ -506,8 +525,17 @@ class FimberLog {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Set<String> additionalLabels = const {},
   }) {
-    _log("V", tag, message, ex: ex, stacktrace: stacktrace, context: context);
+    _log(
+      "V",
+      tag,
+      message,
+      ex: ex,
+      stacktrace: stacktrace,
+      context: context,
+      additionalLabels: additionalLabels,
+    );
   }
 
   /// Logs DEBUG level [message]
@@ -517,8 +545,17 @@ class FimberLog {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Set<String> additionalLabels = const {},
   }) {
-    _log("D", tag, message, ex: ex, stacktrace: stacktrace, context: context);
+    _log(
+      "D",
+      tag,
+      message,
+      ex: ex,
+      stacktrace: stacktrace,
+      context: context,
+      additionalLabels: additionalLabels,
+    );
   }
 
   /// Logs INFO level [message]
@@ -528,8 +565,17 @@ class FimberLog {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Set<String> additionalLabels = const {},
   }) {
-    _log("I", tag, message, ex: ex, stacktrace: stacktrace, context: context);
+    _log(
+      "I",
+      tag,
+      message,
+      ex: ex,
+      stacktrace: stacktrace,
+      context: context,
+      additionalLabels: additionalLabels,
+    );
   }
 
   /// Logs WARNING level [message]
@@ -539,8 +585,17 @@ class FimberLog {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Set<String> additionalLabels = const {},
   }) {
-    _log("W", tag, message, ex: ex, stacktrace: stacktrace, context: context);
+    _log(
+      "W",
+      tag,
+      message,
+      ex: ex,
+      stacktrace: stacktrace,
+      context: context,
+      additionalLabels: additionalLabels,
+    );
   }
 
   /// Logs ERROR level [message]
@@ -550,8 +605,17 @@ class FimberLog {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
+    Set<String> additionalLabels = const {},
   }) {
-    _log("E", tag, message, ex: ex, stacktrace: stacktrace, context: context);
+    _log(
+      "E",
+      tag,
+      message,
+      ex: ex,
+      stacktrace: stacktrace,
+      context: context,
+      additionalLabels: additionalLabels,
+    );
   }
 
   /// Logs [message] with [tag] and [level]
@@ -563,7 +627,7 @@ class FimberLog {
     dynamic ex,
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
-    Map<String, dynamic>? globalContext,
+    required Set<String> additionalLabels,
   }) {
     Fimber.log(
       level,
@@ -572,7 +636,7 @@ class FimberLog {
       ex: ex,
       stacktrace: stacktrace,
       context: context,
-      extraGlobalContext: globalContext,
+      labels: labels.union(additionalLabels),
     );
   }
 }
@@ -616,6 +680,8 @@ class CustomFormatTree extends LogTree {
 
   /// Format token for character index on the line
   static const String charAtIndexToken = "{CHAR_INDEX}";
+
+  static const String labelsToken = "{LABELS}";
 
   /// Default format for timestamp based log message.
   static const String defaultFormat =
@@ -708,12 +774,14 @@ class CustomFormatTree extends LogTree {
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
     Map<String, dynamic>? globalContext,
+    required Set<String> labels,
   }) {
     final LogLineInfo logLineInfo = LogTree.getLogLineInfo();
     _printFormattedLog(
       level,
       msg,
       tag ?? LogTree.getTag(),
+      labels,
       logLineInfo,
       ex,
       stacktrace,
@@ -737,6 +805,7 @@ class CustomFormatTree extends LogTree {
     String level,
     String msg,
     String tag,
+    Set<String> labels,
     LogLineInfo logLineInfo,
     dynamic ex,
     StackTrace? stacktrace,
@@ -752,6 +821,8 @@ class CustomFormatTree extends LogTree {
           logFormat,
           level,
           msg,
+          tag,
+          labels,
           logLineInfo,
           "\n$ex",
           "\n$stackTraceMessage",
@@ -761,7 +832,17 @@ class CustomFormatTree extends LogTree {
       );
     } else {
       printLine(
-        _formatLine(logFormat, level, msg, tag, logLineInfo, "", "", context),
+        _formatLine(
+          logFormat,
+          level,
+          msg,
+          tag,
+          labels,
+          logLineInfo,
+          "",
+          "",
+          context,
+        ),
         level: level,
       );
     }
@@ -772,6 +853,7 @@ class CustomFormatTree extends LogTree {
     String level,
     String msg,
     String tag,
+    Set<String> labels,
     LogLineInfo logLineInfo,
     String exMsg,
     String stacktrace,
@@ -779,6 +861,7 @@ class CustomFormatTree extends LogTree {
   ) {
     final date = DateTime.now().toIso8601String();
     final elapsed = _elapsedTimeStopwatch?.elapsed.toString() ?? '';
+    final List<String> sortedLabels = List<String>.from(labels)..sort();
 
     String logLine = _replaceAllSafe(logFormat, timeStampToken, date);
     logLine = _replaceAllSafe(logLine, timeElapsedToken, elapsed);
@@ -787,6 +870,11 @@ class CustomFormatTree extends LogTree {
     logLine = _replaceAllSafe(logLine, exceptionMsgToken, exMsg);
     logLine = _replaceAllSafe(logLine, exceptionStackToken, stacktrace);
     logLine = _replaceAllSafe(logLine, tagToken, tag);
+    logLine = _replaceAllSafe(
+      logLine,
+      labelsToken,
+      sortedLabels.map((e) => '<$e>').join(),
+    );
     if (_printFilePath) {
       logLine = _replaceAllSafe(
         logLine,

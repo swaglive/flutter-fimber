@@ -338,15 +338,22 @@ void main() {
       );
       Fimber.plantTree(formatTree);
       Fimber.i("Test message");
-      assert(
-        formatTree.allLines.first
-            .startsWith('main.<ac>.<ac>\tfimber_test.dart\t'),
+      final testLine = formatTree.allLines.first;
+      expect(
+        testLine.startsWith('main.<ac>.<ac>\tfimber_test.dart\t- //Users'),
+        true,
       );
-      assert(
-        formatTree.allLines.first
-            .endsWith('flutter-fimber/fimber/test/fimber_test.dart : 340'),
+      /**
+       NOTE: 
+       1. This line tests `Fimber.i("Test message");`, which is sensitive to the actual location of that line.
+          When encounter failure, check the line number first.
+       2. The path should be agnostic to project folder name and computer user name. 
+          If the 1. check passes but still having error, check if the path of this file shoulb be updated.
+       */
+      expect(
+        testLine.endsWith('/fimber/test/fimber_test.dart : 340'),
+        true,
       );
-
       Fimber.unplantTree(formatTree);
     });
   });
@@ -380,6 +387,76 @@ void main() {
       Fimber.e("error logging");
 
       expect(called, 5);
+    });
+  });
+
+  group('Labeling', () {
+    test('Single label', () {
+      Fimber.clearAll();
+      final tree = MockTree(['D']);
+      Fimber.plantTree(tree);
+
+      Fimber.d('Test 1', labels: {'Label-A'});
+
+      expect(tree.logLines[0].labels, {'Label-A'});
+    });
+
+    test('Change labels', () {
+      Fimber.clearAll();
+      final tree = MockTree(['D']);
+      Fimber.plantTree(tree);
+
+      Fimber.d('Test 1', labels: {'Label-A'});
+      Fimber.d('Test 2', labels: {'Label-B'});
+
+      expect(tree.logLines[0].labels, {'Label-A'});
+      expect(tree.logLines[1].labels, {'Label-B'});
+    });
+
+    test('Multiple labels', () {
+      Fimber.clearAll();
+      final tree = MockTree(['D']);
+      Fimber.plantTree(tree);
+
+      Fimber.d('Test 1', labels: {'Label-A', 'Label-B'});
+
+      expect(tree.logLines[0].labels, {'Label-A', 'Label-B'});
+    });
+
+    test('Tag should be included as a label', () {
+      Fimber.clearAll();
+      final tree = MockTree(['D']);
+      Fimber.plantTree(tree);
+
+      Fimber.d('Test 1', tag: 'Tag-A');
+
+      expect(tree.logLines[0].labels, {'Tag-A'});
+    });
+
+    test('Labels merges tag', () {
+      Fimber.clearAll();
+      final tree = MockTree(['D']);
+      Fimber.plantTree(tree);
+
+      Fimber.d('Test 1', tag: 'Tag-A', labels: {'Label-A', 'Label-B'});
+      Fimber.d('Test 2', tag: 'Tag-A', labels: {'Tag-A', 'Label-B'});
+
+      expect(tree.logLines[0].labels, {'Tag-A', 'Label-A', 'Label-B'});
+      expect(tree.logLines[1].labels, {'Tag-A', 'Label-B'});
+    });
+
+    test('Value semantic', () {
+      Fimber.clearAll();
+      final tree = MockTree(['D']);
+      Fimber.plantTree(tree);
+
+      final labels = {'Label-A'};
+      Fimber.d('Test 1', labels: labels);
+      labels.add('Label-B');
+      Fimber.d('Test 2', labels: labels);
+
+      expect(tree.logLines[0].labels, {'Label-A'});
+      expect(tree.logLines[1].labels, {'Label-A', 'Label-B'});
     });
   });
 }
@@ -436,6 +513,7 @@ class AssertTree extends LogTree {
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
     Map<String, dynamic>? globalContext,
+    required Set<String> labels,
   }) {
     tag = (tag ?? LogTree.getTag());
     final newLogLine =
@@ -443,4 +521,63 @@ class AssertTree extends LogTree {
     lastLogLine = newLogLine;
     allLines.add(newLogLine);
   }
+}
+
+class MockTree extends LogTree {
+  List<String> logLevels = [];
+
+  MockTree(this.logLevels);
+
+  final List<CapturedLog> logLines = [];
+
+  @override
+  List<String> getLevels() {
+    return logLevels;
+  }
+
+  @override
+  void log(
+    String level,
+    String msg, {
+    String? tag,
+    dynamic ex,
+    StackTrace? stacktrace,
+    Map<String, dynamic>? context,
+    Map<String, dynamic>? globalContext,
+    required Set<String> labels,
+  }) {
+    logLines.add(
+      CapturedLog(
+        level: level,
+        msg: msg,
+        tag: tag,
+        ex: ex,
+        stacktrace: stacktrace,
+        context: context,
+        globalContext: globalContext,
+        labels: labels,
+      ),
+    );
+  }
+}
+
+class CapturedLog {
+  String level;
+  String msg;
+  String? tag;
+  dynamic ex;
+  StackTrace? stacktrace;
+  Map<String, dynamic>? context;
+  Map<String, dynamic>? globalContext;
+  Set<String> labels;
+  CapturedLog({
+    required this.level,
+    required this.msg,
+    required this.tag,
+    required this.ex,
+    required this.stacktrace,
+    required this.context,
+    required this.globalContext,
+    required this.labels,
+  });
 }

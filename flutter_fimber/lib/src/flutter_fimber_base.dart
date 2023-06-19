@@ -48,6 +48,7 @@ class FimberTree extends LogTree {
     StackTrace? stacktrace,
     Map<String, dynamic>? context,
     Map<String, dynamic>? globalContext,
+    required Set<String> labels,
   }) {
     var logTag = tag ?? LogTree.getTag();
     String? exDump;
