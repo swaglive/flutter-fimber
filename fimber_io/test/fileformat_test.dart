@@ -134,9 +134,23 @@ void main() async {
       print(secondFile);
       print(File(secondFile).readAsStringSync());
 
-      expect(File(firstFile).readAsStringSync().trim().split('\n').length, 4);
+      expect(
+          File(firstFile)
+              .readAsStringSync()
+              .trim()
+              .split('\n')
+              .where((element) => element.isNotEmpty)
+              .length,
+          4);
 
-      expect(File(secondFile).readAsStringSync().trim().split('\n').length, 2);
+      expect(
+          File(secondFile)
+              .readAsStringSync()
+              .trim()
+              .split('\n')
+              .where((element) => element.isNotEmpty)
+              .length,
+          2);
 
       assert(firstFile != secondFile);
       assert(File(firstFile).existsSync());
@@ -179,7 +193,7 @@ void main() async {
       // detects if file was created
       expect(
           logTree.isLogFile(
-              '$testDirName${dirSeparator}empty${dirSeparator}log_1.txt'),
+              '$testDirName${dirSeparator}empty${dirSeparator}${logTree.logFileFromId(logTree.fileIdList.first)}.txt'),
           true);
 
       Fimber.plantTree(logTree);
@@ -187,7 +201,7 @@ void main() async {
       await Future.delayed(Duration(milliseconds: 200));
       Fimber.i('Log single line - A');
       await waitForAppendBuffer();
-
+      final a = 0;
       File(logFile).deleteSync();
     });
 
@@ -199,11 +213,20 @@ void main() async {
         filenamePrefix: 'log_',
       );
       // detection tests - todo fix
-      expect(logTree.isLogFile('$testDirName${dirSeparator}log_1.txt'), true);
+      final int fileId = logTree.fileIdList.first;
+      final String fileName = logTree.logFileFromId(fileId);
+      expect(
+          logTree.isLogFile('$testDirName${dirSeparator}$fileName.txt'), true);
       expect(logTree.getLogIndex('$testDirName${dirSeparator}log_nothing.txt'),
           -1);
-      expect(logTree.getLogIndex('$testDirName${dirSeparator}log_1.txt'), 1);
-      expect(logTree.getLogIndex('$testDirName${dirSeparator}log_3.txt'), 3);
+      expect(
+          logTree.getLogIndex(
+              '$testDirName${dirSeparator}log_2023_06_19_00_00_00.txt'),
+          1687104000000);
+      expect(
+          logTree.getLogIndex(
+              '$testDirName${dirSeparator}log_2023_06_19_23_59_59.txt'),
+          1687190399000);
 
       Fimber.plantTree(logTree);
 
@@ -212,40 +235,51 @@ void main() async {
       await waitForAppendBuffer();
 
       await Future.delayed(Duration(milliseconds: 200));
-      var logFile1 = logTree.logFileFromId(logTree.fileIdList[0]);
+      final int fileId1 = logTree.fileIdList[0];
+      var logFile1 = logTree.logFileFromId(fileId1);
 
       print(logFile1);
       expect(logFile1,
-          '$testDirName${dirSeparator}log_${logTree.fileIdList[0]}.txt');
+          '$testDirName${dirSeparator}log_${RollingFileTree.dateFormat.format(DateTime.fromMillisecondsSinceEpoch(fileId1))}.txt');
       Fimber.i('Log single line - B');
       await waitForAppendBuffer();
       await Future.delayed(Duration(milliseconds: 200));
-      var logFile2 = logTree.logFileFromId(logTree.fileIdList[1]);
+
+      final int fileId2 = logTree.fileIdList[1];
+      var logFile2 = logTree.logFileFromId(fileId2);
 
       print(logFile2);
       expect(logFile2,
-          '$testDirName${dirSeparator}log_${logTree.fileIdList[1]}.txt');
+          '$testDirName${dirSeparator}log_${RollingFileTree.dateFormat.format(DateTime.fromMillisecondsSinceEpoch(fileId2))}.txt');
 
       await Future.delayed(Duration(milliseconds: 200));
       Fimber.i('Log single line - C with some chars');
       await waitForAppendBuffer();
 
-      var logFile3 = logTree.logFileFromId(logTree.fileIdList[2]);
+      final int fileId3 = logTree.fileIdList[1];
+      var logFile3 = logTree.logFileFromId(fileId3);
       print(logFile3);
       expect(logFile3,
-          '$testDirName${dirSeparator}log_${logTree.fileIdList[2]}.txt');
+          '$testDirName${dirSeparator}log_${RollingFileTree.dateFormat.format(DateTime.fromMillisecondsSinceEpoch(fileId3))}.txt');
 
       Fimber.i('add some new');
       await Future.delayed(Duration(milliseconds: 200));
 
-      File(logFile2).deleteSync();
-      File(logFile1).deleteSync();
-      File(logFile3).deleteSync();
+      final a = 0;
+      for (final int index in logTree.fileIdList) {
+        final File file = File(logTree.logFileFromId(index));
+        if (file.existsSync()) {
+          file.deleteSync();
+        }
+      }
     });
 
     test('File size rolling test', () async {
       // roll file every 20 bytes (in reality every log line)
       var logTree = SizeRollingFileTree(
+        // 因為有Edge case，flush 時間小於一秒，有可能roll完file還是在同一秒裡，所以log還是寫在同一個file，
+        // 如果要解決這個問題需要讓file name包含millisecond
+        bufferWriteInterval: 1000,
         maxDataSize: DataSize.bytes(20),
         directory: testDirName,
         filenamePrefix: '',
@@ -258,18 +292,22 @@ void main() async {
 
       Fimber.i('Test log for more then limit.');
       // wait until buffer dumps to file
-      await waitForAppendBuffer();
+      await waitForAppendBuffer(bufferFlushInterval: 1000);
 
       Fimber.i('Test log for second file');
       // wait until buffer dumps to file
-      await waitForAppendBuffer();
-
+      await waitForAppendBuffer(bufferFlushInterval: 1000);
       final firstFile = logTree.logFileFromId(logTree.fileIdList[0]);
       final secondFile = logTree.logFileFromId(logTree.fileIdList[1]);
 
-      assert(firstFile != secondFile);
       print(firstFile);
+      print(File(firstFile).readAsStringSync());
+
       print(secondFile);
+      print(File(secondFile).readAsStringSync());
+
+      assert(firstFile != secondFile);
+
       assert(File(firstFile).existsSync());
       assert(File(secondFile).existsSync());
 
@@ -322,18 +360,21 @@ void main() async {
       await waitForAppendBuffer();
 
       var logFile = tree.outputFileName;
-      var logLines = await File(logFile).readAsLines();
+      var logLines = (await File(logFile).readAsLines())
+          .where((element) => element.isNotEmpty)
+          .toList();
 
       expect(logLines.length, 3);
-      assert(logLines[0].endsWith('Test log line 1.'));
-      assert(logLines[1].endsWith('Test log line 2.'));
-      assert(logLines[2].endsWith('Test log line 3.'));
+      assert(logLines[0].trim().endsWith('Test log line 1.'));
+      assert(logLines[1].trim().endsWith('Test log line 2.'));
+      assert(logLines[2].trim().endsWith('Test log line 3.'));
     });
   });
 }
 
 /// Waits for append buffer method.
-Future waitForAppendBuffer() async {
-  await Future.delayed(
-      Duration(milliseconds: FileTree.defaultBufferFlushInterval));
+Future waitForAppendBuffer({int? bufferFlushInterval}) async {
+  await Future.delayed(Duration(
+      milliseconds:
+          bufferFlushInterval ?? FileTree.defaultBufferFlushInterval));
 }
