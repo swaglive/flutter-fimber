@@ -10,9 +10,12 @@ import '../fimber_io.dart';
 /// nc -kvl 5601 | grep TheClassName
 class NetworkLoggingTree extends CustomFormatTree implements UnPlantableTree {
   /// Creates isntance of [NetworkLoggingTree]
-  NetworkLoggingTree._(this._server, this._port,
-      {this.timeout = const Duration(seconds: 10), this.isTcpSocket = false})
-      : super(
+  NetworkLoggingTree._(
+    this._server,
+    this._port, {
+    this.timeout = const Duration(seconds: 10),
+    this.isTcpSocket = false,
+  }) : super(
           useColors: true,
           logFormat:
               '${CustomFormatTree.levelToken} ${CustomFormatTree.tagToken}: ${CustomFormatTree.messageToken}',
@@ -109,10 +112,13 @@ class NetworkLoggingTree extends CustomFormatTree implements UnPlantableTree {
         print('No socket available - will wait for one with this message.');
 
         /// TODO make a small cache locally before socket is available
-        _socketUdpComplete?.future.then((value) => value.send(
+        _socketUdpComplete?.future.then(
+          (value) => value.send(
             utf8.encoder.convert(line).toList(),
             InternetAddress(_server),
-            _port));
+            _port,
+          ),
+        );
       }
     }
   }

@@ -1,9 +1,7 @@
-// ignore: avoid_classes_with_only_static_members
 import 'dart:convert';
 
-import 'package:fimber/src/jsonify_context.dart';
-
 import 'colorize.dart';
+import 'jsonify_context.dart';
 
 typedef GlobalContextProvider = Map<String, dynamic>? Function();
 
@@ -310,9 +308,10 @@ class DebugTree extends LogTree {
     bool useColors = false,
   }) {
     return DebugTree(
-        logLevels: logLevels,
-        printTimeType: timeElapsedType,
-        useColors: useColors);
+      logLevels: logLevels,
+      printTimeType: timeElapsedType,
+      useColors: useColors,
+    );
   }
 
   /// Logs [message] with [level]
@@ -328,14 +327,14 @@ class DebugTree extends LogTree {
     Map<String, dynamic>? globalContext,
     required Set<String> labels,
   }) {
-    String logTag = tag ?? LogTree.getTag();
+    final String logTag = tag ?? LogTree.getTag();
     final StringBuffer logLineBuilder =
         StringBuffer("$level [$logTag]\t$message");
     if (context != null) {
       logLineBuilder.write("\tcontext: ${jsonEncode(context)}");
     }
     if (ex != null) {
-      logLineBuilder.write("\n${ex.toString()}");
+      logLineBuilder.write("\n$ex");
     }
     if (stacktrace != null) {
       final List<String> tmpStacktrace = stacktrace.toString().split('\n');
@@ -491,8 +490,10 @@ abstract class LogTree {
     }
   }
 
-  static List<String> getStacktraceList(StackTrace stackTrace,
-      {int maxStackIndex = 6}) {
+  static List<String> getStacktraceList(
+    StackTrace stackTrace, {
+    int maxStackIndex = 6,
+  }) {
     final List<String> stackTraceList = stackTrace.toString().split('\n');
     if (stackTraceList.isEmpty) return [];
     return stackTraceList.sublist(
@@ -756,7 +757,9 @@ class CustomFormatTree extends LogTree {
     } else {
       if (filePath.lastIndexOf('/') >= 0) {
         return filePath.substring(
-            filePath.lastIndexOf('/') + 1, filePath.length);
+          filePath.lastIndexOf('/') + 1,
+          filePath.length,
+        );
       } else {
         return filePath;
       }
@@ -825,7 +828,7 @@ class CustomFormatTree extends LogTree {
           tag,
           labels,
           logLineInfo,
-          "\n${ex.toString()}",
+          "\n$ex",
           "\n$stackTraceMessage",
           context,
         ),
@@ -878,22 +881,34 @@ class CustomFormatTree extends LogTree {
     );
     if (_printFilePath) {
       logLine = _replaceAllSafe(
-          logLine, filePathToken, logLineInfo.logFilePath ?? '');
+        logLine,
+        filePathToken,
+        logLineInfo.logFilePath ?? '',
+      );
     }
     if (_printFileName) {
       logLine = _replaceAllSafe(
-          logLine, fileNameToken, _extractFileName(logLineInfo.logFilePath));
+        logLine,
+        fileNameToken,
+        _extractFileName(logLineInfo.logFilePath),
+      );
     }
     if (_printLineNumber) {
       logLine = _replaceAllSafe(
-          logLine, lineNumberToken, logLineInfo.lineNumber.toString());
+        logLine,
+        lineNumberToken,
+        logLineInfo.lineNumber.toString(),
+      );
     }
     if (_printCharIndex) {
       logLine = _replaceAllSafe(
-          logLine, charAtIndexToken, logLineInfo.characterIndex.toString());
+        logLine,
+        charAtIndexToken,
+        logLineInfo.characterIndex.toString(),
+      );
     }
     if (context != null && context.isNotEmpty) {
-      logLine = logLine + ' ${jsonEncode(context)}';
+      logLine = '$logLine ${jsonEncode(context)}';
     }
     return logLine;
   }
