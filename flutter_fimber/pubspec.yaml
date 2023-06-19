@@ -5,21 +5,21 @@ homepage: https://github.com/magillus/flutter-fimber
 publish_to: none
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
-  flutter: '>=2.0.0'
+  sdk: ">=2.18.0 <4.0.0"
+  flutter: '>=3.0.0'
 
 dependencies:
+  flutter:
+    sdk: flutter
   fimber:
     git:
       url: https://github.com/swaglive/flutter-fimber.git
       path: fimber
-      ref: 0.6.5-hotfix.11
-  flutter:
-    sdk: flutter
+      ref: 0.6.6-hotfix.1
 
 dev_dependencies:
-  test: '^1.16.5'
-  pedantic: '^1.11.0'
+  test: '^1.0.0'
+  flutter_lints: '^2.0.0'
 
 flutter:
   plugin:
