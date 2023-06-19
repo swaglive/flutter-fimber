@@ -216,7 +216,6 @@ void main() async {
       await Future.delayed(const Duration(milliseconds: 200));
       Fimber.i('Log single line - A');
       await waitForAppendBuffer();
-      final a = 0;
       File(logFile).deleteSync();
     });
 
@@ -280,7 +279,6 @@ void main() async {
       Fimber.i('add some new');
       await Future.delayed(const Duration(milliseconds: 200));
 
-      final a = 0;
       for (final int index in logTree.fileIdList) {
         final File file = File(logTree.logFileFromId(index));
         if (file.existsSync()) {
