@@ -54,11 +54,9 @@ class SizeRollingFileTree extends RollingFileTree {
   void rollToNextFile() {
     currentFileId = getCurrentIndex();
     outputFileName = currentFile();
-    final outputFile = File(outputFileName);
-    if (outputFile.existsSync()) {
-      outputFile.deleteSync();
+    if (!fileIdList.contains(currentFileId)) {
+      fileIdList.add(currentFileId);
     }
-    fileIdList.add(currentFileId);
 
     /// remove old log file.
     final int deleteCount = fileIdList.length - maxAmountOfFile;
