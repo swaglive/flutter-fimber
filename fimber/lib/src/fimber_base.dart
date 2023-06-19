@@ -862,7 +862,7 @@ class CustomFormatTree extends LogTree {
   ) {
     final String date = DateTime.now().toIso8601String();
     final String elapsed = _elapsedTimeStopwatch?.elapsed.toString() ?? '';
-    final List<String> sorttedLabels = List<String>.from(labels)..sort();
+    final List<String> sortedLabels = List<String>.from(labels)..sort();
 
     String logLine = _replaceAllSafe(logFormat, timeStampToken, date);
     logLine = _replaceAllSafe(logLine, timeElapsedToken, elapsed);
@@ -874,7 +874,7 @@ class CustomFormatTree extends LogTree {
     logLine = _replaceAllSafe(
       logLine,
       labelsToken,
-      sorttedLabels.map((e) => '<$e>').join(),
+      sortedLabels.map((e) => '<$e>').join(),
     );
     if (_printFilePath) {
       logLine = _replaceAllSafe(
