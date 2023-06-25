@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_dynamic_calls
+
 import 'dart:convert';
 
 import 'package:fimber/src/jsonify_context.dart';
@@ -84,7 +86,9 @@ void main() {
     final output = jsonifyContext(input);
 
     expect(
-        output['list'][0]['stringList'][0], input['list'][0]['stringList'][0]);
+      output['list'][0]['stringList'][0],
+      input['list'][0]['stringList'][0],
+    );
     expect(output['list'][0]['intList'][0], input['list'][0]['intList'][0]);
     expect(output['list'][0]['floatList'][0], input['list'][0]['floatList'][0]);
     //{"list":[{"stringList":["string"],"intList":[1],"floatList":[1.42]}]}
@@ -191,14 +195,17 @@ void main() {
     };
     final output = jsonifyContext(input);
     expect(output.containsKey('key'), false);
-    expect(output['map'] is Map && !(output['map'] as Map).containsKey('key'),
-        true);
+    expect(
+      output['map'] is Map && !(output['map'] as Map).containsKey('key'),
+      true,
+    );
     expect(output['map']['list'][0], null);
     expect(output['list'][0], null);
     expect(
-        output['list'][1] is Map &&
-            !(output['list'][1] as Map).containsKey('key'),
-        true);
+      output['list'][1] is Map &&
+          !(output['list'][1] as Map).containsKey('key'),
+      true,
+    );
     //{"map":{"list":[null]},"list":[null,{}]}
     expect(jsonEncode(output).isNotEmpty, true);
   });

@@ -6,14 +6,16 @@ publish_to: none
 homepage: https://github.com/magillus/flutter-fimber/tree/master/fimber
 
 environment:
-  sdk: ">=2.18.0 <4.0.0"
+  sdk: ">=2.12.0 <4.0.0"
 
 dependencies:
+  # fimber:
+  #   git:
+  #     url: https://github.com/swaglive/flutter-fimber.git
+  #     path: fimber
+  #     ref: 0.6.6-hotfix.1
   fimber:
-    git:
-      url: https://github.com/swaglive/flutter-fimber.git
-      path: fimber
-      ref: 0.6.6-hotfix.1
+    path: ../fimber/
   intl: ^0.18.0
   synchronized: ^3.0.0
 

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -6,7 +8,7 @@ import 'package:fimber_io/fimber_io.dart';
 import 'package:test/test.dart';
 
 void main() async {
-  final testPort = 17779;
+  const testPort = 17779;
 
   group('UDP Socket log tests.', () {
     NetworkLoggingTree logTree;

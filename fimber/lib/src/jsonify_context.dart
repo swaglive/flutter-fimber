@@ -8,10 +8,12 @@ Map<String, dynamic> jsonifyContext(Map<String, dynamic> context) {
 
 Map<String, dynamic> _jsonifyMap(Map<String, dynamic> context) {
   final Map<String, dynamic> json = {};
-  json.addEntries(context.entries
-      .map(_jsonifyEntry)
-      .whereType<MapEntry<String, dynamic>>()
-      .toList());
+  json.addEntries(
+    context.entries
+        .map(_jsonifyEntry)
+        .whereType<MapEntry<String, dynamic>>()
+        .toList(),
+  );
   return json;
 }
 
