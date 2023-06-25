@@ -21,16 +21,16 @@ ${CustomFormatTree.messageToken}''',
 
       assert(
         defaultFormat.logLineHistory[0]
-            .contains("I main.<ac>.<ac>: Test message A"),
+            .contains("I [main.<ac>.<ac>] Test message A"),
       );
       assert(
         defaultFormat.logLineHistory[1]
-            .contains("I main.<ac>.<ac>: Test Message B"),
+            .contains("I [main.<ac>.<ac>] Test Message B"),
       );
       expect(
         defaultFormat.logLineHistory[0]
             .substring("2019-01-18T09:15:08.980493".length + 1),
-        "I main.<ac>.<ac>: Test message A",
+        "I [main.<ac>.<ac>] Test message A  ",
       );
 
       assert(elapsedMsg.logLineHistory[0].contains("Test message A"));
