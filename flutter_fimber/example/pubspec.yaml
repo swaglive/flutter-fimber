@@ -9,9 +9,15 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_fimber:
-    path: ../
+    git:
+      url: https://github.com/swaglive/flutter-fimber.git
+      path: flutter_fimber
+      ref: 0.6.6-hotfix.2
   fimber_io:
-    path: ../../fimber_io
+    git:
+      url: https://github.com/swaglive/flutter-fimber.git
+      path: fimber_io
+      ref: 0.6.6-hotfix.2
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

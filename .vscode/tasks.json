@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "melos:bootstrap",
+            "type": "shell",
+            "command": "melos bootstrap",
+            "detail": "Bootstrap this current workspace and link all packages together",
+            "problemMatcher": [],
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
+        },
+    ],
+}
