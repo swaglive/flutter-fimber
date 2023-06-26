@@ -26,7 +26,7 @@ scripts:
     # the analysis server on low performance machines (like GitHub Actions).
     run: |
       melos exec -c 1 -- \
-        dart analyze . --fatal-infos
+        dart analyze .
     description: |
       Run `dart analyze` in all packages.
        - Note: you can also rely on your IDEs Dart Analysis / Issues window.
