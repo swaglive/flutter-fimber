@@ -12,7 +12,11 @@ dependencies:
   plugin_platform_interface: ^2.1.4
   flutter:
     sdk: flutter
-  fimber: ^0.7.0
+  fimber:
+    git:
+      url: https://github.com/swaglive/flutter-fimber.git
+      path: fimber
+      ref: 0.7.0-hotfix.1
 
 dev_dependencies:
   test: '^1.24.1'
