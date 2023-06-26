@@ -1,20 +1,12 @@
 {
-    "MicroPython.executeButton": [
-        {
-            "text": "▶",
-            "tooltip": "Run",
-            "alignment": "left",
-            "command": "extension.executeFile",
-            "priority": 3.5
-        }
-    ],
-    "MicroPython.syncButton": [
-        {
-            "text": "$(sync)",
-            "tooltip": "sync",
-            "alignment": "left",
-            "command": "extension.execute",
-            "priority": 4
-        }
-    ]
+    "dart.flutterSdkPath": ".fvm/flutter_sdk",
+    // Remove .fvm files from search
+    "search.exclude": {
+        "**/.fvm": true
+    },
+    // Remove from file watching
+    "files.watcherExclude": {
+        "**/.fvm": true
+    },
+    "build_runner.fvm": true
 }
