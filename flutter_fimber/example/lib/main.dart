@@ -11,11 +11,13 @@ void main() {
 
   /// Debug tree with time of process running
   Fimber.plantTree(DebugBufferTree.elapsed());
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 /// Example app for showing usage of Fimber
 class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   _MyAppState createState() => _MyAppState();
 }
