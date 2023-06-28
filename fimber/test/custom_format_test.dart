@@ -66,6 +66,68 @@ ${CustomFormatTree.messageToken}''',
       expect(format.logLineHistory[1], '<A-Label><B-Label> Test 2');
     });
   });
+
+  group('Debug fromat', () {
+    test('Tag format', () {
+      Fimber.clearAll();
+      final debugTree = AssertDebugTree();
+      Fimber.plantTree(debugTree);
+
+      Fimber.i('Message 1', tag: 'tag-1');
+      Fimber.i('Message 2', tag: 'tag-2');
+
+      expect(debugTree.logLineHistory[0].contains('[tag-1]'), true);
+      expect(debugTree.logLineHistory[1].contains('[tag-2]'), true);
+    });
+
+    test('Single label fromat', () {
+      Fimber.clearAll();
+      final debugTree = AssertDebugTree();
+      Fimber.plantTree(debugTree);
+
+      Fimber.i('Message 1', labels: {'label-1'});
+      Fimber.i('Message 2', labels: {'label-2'});
+
+      expect(debugTree.logLineHistory[0].contains('[label-1]'), true);
+      expect(debugTree.logLineHistory[1].contains('[label-2]'), true);
+    });
+
+    test('Multiple labels fromat', () {
+      Fimber.clearAll();
+      final debugTree = AssertDebugTree();
+      Fimber.plantTree(debugTree);
+
+      Fimber.i('Message 1', labels: {'label-1a', 'label-1b'});
+      Fimber.i('Message 2', labels: {'label-2a', 'label-2b', 'label-2c'});
+
+      expect(debugTree.logLineHistory[0].contains('[label-1a]'), true);
+      expect(debugTree.logLineHistory[0].contains('[label-1b]'), true);
+      expect(debugTree.logLineHistory[1].contains('[label-2a]'), true);
+      expect(debugTree.logLineHistory[1].contains('[label-2b]'), true);
+      expect(debugTree.logLineHistory[1].contains('[label-2c]'), true);
+    });
+
+    test('label and tag fromat', () {
+      Fimber.clearAll();
+      final debugTree = AssertDebugTree();
+      Fimber.plantTree(debugTree);
+
+      Fimber.i('Message 1', tag: 'tag-1', labels: {'label-1a', 'label-1b'});
+      Fimber.i(
+        'Message 2',
+        tag: 'tag-2',
+        labels: {'label-2a', 'label-2b', 'label-2c'},
+      );
+
+      expect(debugTree.logLineHistory[0].contains('[tag-1]'), true);
+      expect(debugTree.logLineHistory[0].contains('[label-1a]'), true);
+      expect(debugTree.logLineHistory[0].contains('[label-1b]'), true);
+      expect(debugTree.logLineHistory[1].contains('[tag-2]'), true);
+      expect(debugTree.logLineHistory[1].contains('[label-2a]'), true);
+      expect(debugTree.logLineHistory[1].contains('[label-2b]'), true);
+      expect(debugTree.logLineHistory[1].contains('[label-2c]'), true);
+    });
+  });
 }
 
 class AssertFormattedTree extends CustomFormatTree {
@@ -85,5 +147,15 @@ class AssertFormattedTree extends CustomFormatTree {
   void printLine(String line, {String? level}) {
     logLineHistory.add(line);
     super.printLine(line, level: level);
+  }
+}
+
+class AssertDebugTree extends DebugTree {
+  List<String> logLineHistory = [];
+
+  @override
+  void printLog(String logLine, {String? level}) {
+    logLineHistory.add(logLine);
+    super.printLog(logLine, level: level);
   }
 }
