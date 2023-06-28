@@ -127,6 +127,18 @@ ${CustomFormatTree.messageToken}''',
       expect(debugTree.logLineHistory[1].contains('[label-2b]'), true);
       expect(debugTree.logLineHistory[1].contains('[label-2c]'), true);
     });
+
+    test('Still print without labels nor tag', () {
+      Fimber.clearAll();
+      final debugTree = AssertDebugTree();
+      Fimber.plantTree(debugTree);
+
+      Fimber.i('Message 1');
+      Fimber.i('Message 2');
+
+      expect(debugTree.logLineHistory[0].contains('Message 1'), true);
+      expect(debugTree.logLineHistory[1].contains('Message 2'), true);
+    });
   });
 }
 
