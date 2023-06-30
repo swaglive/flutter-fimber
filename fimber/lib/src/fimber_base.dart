@@ -327,9 +327,15 @@ class DebugTree extends LogTree {
     Map<String, dynamic>? globalContext,
     required Set<String> labels,
   }) {
-    final logTag = tag ?? LogTree.getTag();
+    String formattedLabels() {
+      return labels.isNotEmpty
+          //Labels include tag and intend to supercede it.
+          ? labels.map((e) => '[$e]').join()
+          : '[${LogTree.getTag()}]';
+    }
+
     final StringBuffer logLineBuilder =
-        StringBuffer("$level [$logTag]\t$message");
+        StringBuffer("$level ${formattedLabels()}\t$message");
     if (context != null) {
       logLineBuilder.write("\tcontext: ${jsonEncode(context)}");
     }
