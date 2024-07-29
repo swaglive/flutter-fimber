@@ -20,4 +20,6 @@ flutter_fimber/example/.flutter-plugins-dependencies
 flutter_fimber/example/ios/Flutter/flutter_export_environment.sh
 
 **/.fvm/
+**/.vscode/*
+!**/.vscode/tasks.json
 pubspec_overrides.yaml
